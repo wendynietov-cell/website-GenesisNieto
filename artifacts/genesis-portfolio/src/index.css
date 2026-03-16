@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme inline {
@@ -7,70 +7,123 @@
 
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
-  
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
-  
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
-  
   --color-border: hsl(var(--border));
-  --color-glass-bg: rgba(255, 255, 255, 0.25);
-  --color-glass-border: rgba(255, 255, 255, 0.4);
 }
 
 :root {
-  /* Warm Beige/Cream Palette */
-  --background: 40 33% 96%; /* #F6F3ED */
-  --foreground: 210 11% 15%; /* Dark charcoal for contrast */
-  
-  --primary: 30 15% 35%; /* Warm deep taupe/brown */
-  --primary-foreground: 40 33% 96%; 
-  
-  --muted: 40 20% 90%;
-  --muted-foreground: 210 5% 40%;
-  
-  --border: 40 20% 85%;
+  /* Warm Beige/Cream Palette — upgraded */
+  --background: 36 40% 97%;        /* #FAF8F5 — crema puro */
+  --foreground: 18 37% 23%;        /* #5C3C2C — marrón café oscuro (títulos) */
+  --primary: 18 37% 23%;           /* #5C3C2C */
+  --primary-foreground: 36 40% 97%;
+  --muted: 33 25% 91%;
+  --muted-foreground: 24 18% 45%;  /* #8A6B52 */
+  --border: 33 30% 82%;
+
+  /* Café suave accent — para botones, bordes de cristal, detalles */
+  --accent-cafe: #C8A889;
+  --accent-cafe-dark: #8A6B52;
+  --glass-border: rgba(200, 168, 137, 0.35);
+  --glass-shimmer: rgba(200, 168, 137, 0.2);
+}
+
+/* ─── Film Grain Overlay (luxury paper texture) ─── */
+@keyframes grain-shift {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(-1%, 1%); }
+  50% { transform: translate(1%, -1%); }
+  75% { transform: translate(-0.5%, 0.5%); }
+}
+
+/* ─── Shimmer sweep on glass cards ─── */
+@keyframes shimmer-sweep {
+  0% { transform: translateX(-150%) skewX(-15deg); opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateX(250%) skewX(-15deg); opacity: 0; }
+}
+
+/* ─── Floating CTA Pulse ─── */
+@keyframes soft-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 168, 137, 0.3), 0 8px 32px rgba(92,60,44,0.08); }
+  50%       { box-shadow: 0 0 0 10px rgba(200, 168, 137, 0), 0 8px 32px rgba(92,60,44,0.08); }
+}
+
+.pulse-cta {
+  animation: soft-pulse 3s ease-in-out infinite;
+}
+
+/* ─── Accent Italic ─── */
+.accent-italic {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+}
+
+/* ─── Glass utility ─── */
+.glass {
+  background: rgba(255, 255, 255, 0.38);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(200, 168, 137, 0.35);
+  box-shadow: 0 8px 32px 0 rgba(92, 60, 44, 0.04);
+}
+
+.glass-dark {
+  background: rgba(92, 60, 44, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(200, 168, 137, 0.2);
+}
+
+/* ─── Text balance ─── */
+.text-balance {
+  text-wrap: balance;
 }
 
 @layer base {
   html {
     scroll-behavior: smooth;
   }
-  
+
   body {
-    @apply bg-background text-foreground antialiased font-sans selection:bg-primary/20 selection:text-primary;
-    /* Soft noise texture for organic feel */
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+    @apply bg-background text-foreground antialiased font-sans;
+    /* Organic gradient background */
+    background-image:
+      /* Film grain (SVG noise) */
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.028'/%3E%3C/svg%3E"),
+      /* Organic radial warmth top-right */
+      radial-gradient(ellipse 70% 60% at 80% 10%, rgba(215, 184, 153, 0.35) 0%, transparent 65%),
+      /* Subtle warmth bottom-left */
+      radial-gradient(ellipse 50% 45% at 15% 90%, rgba(215, 184, 153, 0.22) 0%, transparent 60%),
+      /* Main gradient: crema to café con leche */
+      linear-gradient(160deg, #FAF8F5 0%, #F3ECE3 40%, #EAD9C8 75%, #D7B899 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading tracking-tight;
+    font-family: 'Cormorant Garamond', serif;
+    color: #5C3C2C;
+    letter-spacing: -0.02em;
+  }
+
+  /* Paragraph text slightly warmer */
+  p {
+    color: inherit;
   }
 }
 
 @layer utilities {
-  .glass {
-    @apply bg-[rgba(255,255,255,0.35)] backdrop-blur-xl border border-[rgba(255,255,255,0.5)] shadow-[0_8px_32px_0_rgba(31,38,135,0.03)];
+  /* Hide scrollbar cross-browser */
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
-  .glass-dark {
-    @apply bg-[rgba(0,0,0,0.05)] backdrop-blur-lg border border-[rgba(255,255,255,0.2)] shadow-[0_8px_32px_0_rgba(0,0,0,0.05)];
-  }
-  .text-balance {
-    text-wrap: balance;
-  }
-  .accent-italic {
-    font-family: 'Cormorant Garamond', serif;
-    font-style: italic;
-    font-weight: 400;
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
-
-@keyframes soft-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(139, 115, 85, 0.2), 0 8px 32px rgba(31,38,135,0.05); }
-  50% { box-shadow: 0 0 0 10px rgba(139, 115, 85, 0), 0 8px 32px rgba(31,38,135,0.05); }
-}
-.pulse-cta {
-  animation: soft-pulse 3s ease-in-out infinite;
-}
-

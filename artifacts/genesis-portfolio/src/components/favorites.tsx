@@ -1,29 +1,12 @@
 import { motion } from "framer-motion";
-
-const favorites = [
-  {
-    category: "Suplementación",
-    img: "https://images.unsplash.com/photo-1579722820308-d74e571900a9?w=600&h=750&fit=crop"
-  },
-  {
-    category: "Activewear",
-    img: "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=600&h=750&fit=crop"
-  },
-  {
-    category: "Recetas & Cocina",
-    img: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&h=750&fit=crop"
-  },
-  {
-    category: "Skincare",
-    img: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600&h=750&fit=crop"
-  },
-  {
-    category: "Bienestar",
-    img: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=600&h=750&fit=crop"
-  }
-];
+import { useContent } from "@/context/content-context";
 
 export function Favorites() {
+  const { content } = useContent();
+  const { sectionTitle, sectionSubtitle, items } = content.favorites;
+
+  const titleParts = sectionTitle.split("Favoritos");
+
   return (
     <section id="favoritos" className="py-32 overflow-hidden">
       <div className="max-w-6xl mx-auto px-6">
@@ -34,16 +17,17 @@ export function Favorites() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-heading mb-4">
-            Mis <em className="accent-italic not-italic font-heading italic">Favoritos</em> del Mes
+            {titleParts.length > 1 ? (
+              <>
+                {titleParts[0]}<em className="font-heading italic">Favoritos</em>{titleParts[1]}
+              </>
+            ) : sectionTitle}
           </h2>
-          <p className="text-foreground/70 text-lg max-w-2xl mx-auto text-balance">
-            Los productos que forman parte de mi rutina este mes — mis marcas favoritas del momento.
-          </p>
+          <p className="text-foreground/70 text-lg max-w-2xl mx-auto text-balance">{sectionSubtitle}</p>
         </motion.div>
 
-        {/* Horizontal Scroll on Mobile, Flex wrap on Desktop */}
-        <div className="flex overflow-x-auto pb-12 -mx-6 px-6 md:mx-0 md:px-0 md:grid md:grid-cols-5 gap-6 snap-x snap-mandatory scrollbar-hide">
-          {favorites.map((fav, i) => (
+        <div className="flex overflow-x-auto pb-12 -mx-6 px-6 md:mx-0 md:px-0 md:grid md:grid-cols-5 gap-6 snap-x snap-mandatory scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+          {items.map((fav, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, scale: 0.95 }}
@@ -54,17 +38,27 @@ export function Favorites() {
             >
               <div className="glass p-2 rounded-[2rem] overflow-hidden aspect-[3/4] group relative cursor-pointer hover:shadow-xl transition-all duration-500">
                 <div className="relative w-full h-full rounded-3xl overflow-hidden">
-                  <img 
-                    src={fav.img} 
-                    alt={fav.category} 
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
+                  {fav.img ? (
+                    <img
+                      src={fav.img}
+                      alt={fav.category}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center" style={{ background: "rgba(200,168,137,0.15)" }}>
+                      <span className="text-4xl">📷</span>
+                    </div>
+                  )}
                   <div className="absolute top-4 left-4 z-10">
                     <span className="glass px-3 py-1.5 rounded-full text-xs font-medium text-foreground/90 backdrop-blur-md bg-white/40">
                       {fav.category}
                     </span>
                   </div>
-                  {/* Subtle vignette for depth */}
+                  {fav.productName && (
+                    <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/30 to-transparent">
+                      <p className="text-white text-xs font-medium truncate">{fav.productName}</p>
+                    </div>
+                  )}
                   <div className="absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/5 pointer-events-none" />
                 </div>
               </div>

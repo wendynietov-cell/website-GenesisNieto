@@ -1,34 +1,11 @@
 import { motion } from "framer-motion";
 import { GlassCard } from "./ui/glass-card";
-
-const steps = [
-  {
-    num: "1",
-    title: "Briefing & Estilo",
-    desc: "Entendemos tu marca, valores y el estilo de contenido que necesitas.",
-    accent: "Estilo",
-  },
-  {
-    num: "2",
-    title: "Grabación / Envío",
-    desc: "Visito tu locación o recibo tu producto. Planificamos cada toma al detalle.",
-    accent: "Grabación",
-  },
-  {
-    num: "3",
-    title: "Edición Premium",
-    desc: "Postproducción cuidadosa: color, sonido, texto y ritmo visual perfectos.",
-    accent: "Premium",
-  },
-  {
-    num: "4",
-    title: "Entrega Final",
-    desc: "Video listo para publicar en 5-7 días hábiles, con formatos para cada red.",
-    accent: "Final",
-  },
-];
+import { useContent } from "@/context/content-context";
 
 export function Method() {
+  const { content } = useContent();
+  const { sectionTitle, sectionSubtitle, steps } = content.method;
+
   return (
     <section id="metodo" className="py-32 relative">
       <div className="max-w-6xl mx-auto px-6">
@@ -39,16 +16,14 @@ export function Method() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-heading mb-4">
-            El <em className="accent-italic not-italic font-heading italic">Proceso</em>
+            El <em className="font-heading italic">Proceso</em>
           </h2>
-          <p className="text-foreground/70 text-lg">De la idea a la pantalla, paso a paso</p>
+          <p className="text-foreground/70 text-lg">{sectionSubtitle}</p>
         </motion.div>
 
         <GlassCard className="p-8 md:p-12">
           <div className="flex flex-col md:flex-row gap-8 md:gap-4 justify-between relative">
-            {/* Horizontal Line connector for desktop */}
             <div className="hidden md:block absolute top-12 left-10 right-10 h-[1px] bg-foreground/10 z-0" />
-            
             {steps.map((step, i) => (
               <motion.div
                 key={step.num}
@@ -63,20 +38,7 @@ export function Method() {
                     {step.num}
                   </span>
                 </div>
-                
-                <h3 className="text-xl font-medium mb-3">
-                  {step.title.split(step.accent).map((part, index, arr) => (
-                    <span key={index}>
-                      {part}
-                      {index < arr.length - 1 && (
-                        <em className="accent-italic not-italic font-heading italic text-2xl lowercase">
-                          {step.accent}
-                        </em>
-                      )}
-                    </span>
-                  ))}
-                </h3>
-                
+                <h3 className="text-xl font-medium mb-3">{step.title}</h3>
                 <p className="text-sm text-foreground/60 leading-relaxed max-w-[200px] text-balance">
                   {step.desc}
                 </p>

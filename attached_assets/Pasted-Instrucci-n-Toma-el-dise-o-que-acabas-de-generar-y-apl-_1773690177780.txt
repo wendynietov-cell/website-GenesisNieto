@@ -1,0 +1,27 @@
+Instrucción: "Toma el diseño que acabas de generar y aplícale las siguientes mejoras de nivel profesional para elevar la estética a un portafolio de lujo. No borres la estructura, solo evoluciona los siguientes puntos:"
+
+1. Evolución del Fondo (Adiós a lo plano)
+Mejora: "El fondo actual es demasiado plano. Cámbialo por un gradiente orgánico y sofisticado que transicione suavemente entre un Crema (#FAF8F5) y un Café con Leche muy suave (#D7B899)."
+
+Textura de Lujo: "Aplica una capa de 'ruido de grano' (film grain noise) ultra sutil sobre todo el fondo. Esto debe darle una sensación táctil de papel de alta gama o tela de lino, eliminando la sensación de 'página web vacía'."
+
+Importante: "Elimina cualquier forma abstracta o elemento flotante. El fondo debe ser limpio y minimalista, basado solo en color y textura."
+
+2. Reinvención de la Portada (Hero Section - Opción B)
+Composición Editorial: "Transforma la portada en una pieza de revista de moda. Divide la pantalla visualmente:
+
+Derecha: Coloca una imagen de retrato de cuerpo completo de la creadora (Génesis Nieto). La pose debe ser de confianza y profesional (estilo athleisure premium). El fondo de la foto debe integrarse limpiamente con los tonos crema de la web.
+
+Izquierda: El texto de bienvenida debe ser el foco. El nombre 'Génesis Nieto' en una Serif elegante y el rol 'UGC Creator • Fitness & Lifestyle Coach' en una Sans-Serif moderna.
+
+Separación: "Usa una línea vertical ultra-fina en color café suave (#C8A889) para separar el texto de la imagen, manteniendo un aire minimalista."
+
+3. Inserción de la Paleta de Café y Contraste
+Tipografía: "Cambia el color de todos los títulos principales (H1, H2) a un Marrón Café Oscuro profundo (#5C3C2C) para crear un contraste profesional y costoso."
+
+Detalles de Acento: "Usa un Café Suave (#C8A889) para botones, líneas decorativas y pequeños textos en cursiva. Esto unifica la marca visual con los tres nichos (fitness, recetas y estilo de vida)."
+
+4. Ajustes Técnicos y de Acceso
+Interacciones: "Mantén el efecto Glassmorphism (vidrio esmerilado) en las tarjetas de servicios, pero asegúrate de que el borde del cristal tenga un brillo color café muy sutil."
+
+Dashboard: "Agrega en el pie de página (footer) un botón pequeño y discreto de 'Admin Login' o un icono de candado que lleve al panel de control interno para la edición de contenido."
