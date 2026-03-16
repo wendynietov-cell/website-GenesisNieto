@@ -15,31 +15,108 @@ export function Hero() {
   return (
     <section
       id="hero"
-      className="relative min-h-[100svh] overflow-hidden"
-      style={{ paddingTop: "80px" }}
+      className="relative flex items-center justify-center overflow-hidden"
+      style={{ minHeight: "100svh", padding: "80px 24px 24px" }}
     >
-      {/* ── Desktop: two-column editorial split ── */}
-      <div className="hidden md:grid h-[calc(100svh-80px)] min-h-[600px]" style={{ gridTemplateColumns: "1fr 2px 45%" }}>
+      {/* ── Giant Glass Card ── */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+        className="relative w-full overflow-hidden"
+        style={{
+          maxWidth: "1200px",
+          height: "calc(100svh - 108px)",
+          minHeight: "560px",
+          borderRadius: "32px",
+          /* Glassmorphism base */
+          background: "linear-gradient(135deg, rgba(250,248,245,0.82) 0%, rgba(232,215,196,0.70) 55%, rgba(210,185,160,0.60) 100%)",
+          backdropFilter: "blur(28px)",
+          WebkitBackdropFilter: "blur(28px)",
+          border: "1px solid rgba(200,168,137,0.45)",
+          /* Multi-layer glow */
+          boxShadow: [
+            "0 0 0 1px rgba(255,250,245,0.55) inset",
+            "0 1px 0 rgba(255,255,255,0.75) inset",
+            "0 32px 80px rgba(140,90,55,0.14)",
+            "0 8px 24px rgba(200,168,137,0.18)",
+          ].join(", "),
+        }}
+      >
+        {/* ── Portrait image — right side, fills card ── */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ left: "45%" }}
+        >
+          <img
+            src={`${import.meta.env.BASE_URL}images/genesis-portrait.png`}
+            alt="Génesis Nieto"
+            className="w-full h-full object-cover object-top"
+            style={{ borderRadius: "0 32px 32px 0" }}
+          />
+          {/* Fade the image into the card on the left */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(to right, rgba(245,238,228,0.98) 0%, rgba(240,228,212,0.80) 25%, rgba(235,218,198,0.30) 55%, transparent 100%)",
+              borderRadius: "0 32px 32px 0",
+            }}
+          />
+          {/* Subtle bottom vignette */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(to bottom, transparent 55%, rgba(215,190,165,0.45) 100%)",
+              borderRadius: "0 32px 32px 0",
+            }}
+          />
+        </div>
 
-        {/* LEFT — Text Column */}
+        {/* ── Shimmer highlight stripe ── */}
+        <div
+          className="absolute inset-0 pointer-events-none z-10"
+          style={{
+            background: "linear-gradient(105deg, transparent 30%, rgba(255,252,248,0.22) 48%, rgba(200,168,137,0.10) 54%, transparent 68%)",
+            borderRadius: "32px",
+          }}
+        />
+
+        {/* ── Top highlight ring (inner glow) ── */}
+        <div
+          className="absolute inset-0 pointer-events-none z-10 rounded-[32px]"
+          style={{
+            boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.70), inset 0 -1px 0 rgba(200,168,137,0.25)",
+          }}
+        />
+
+        {/* ── Text Content — left side ── */}
         <motion.div
-          className="flex flex-col justify-center px-10 lg:px-16 xl:px-24 py-8"
+          className="relative z-20 flex flex-col justify-center h-full"
+          style={{ maxWidth: "520px", padding: "clamp(2rem, 5vw, 4rem)" }}
           initial="hidden"
           animate="show"
           variants={{
             hidden: {},
-            show: { transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
+            show: { transition: { staggerChildren: 0.11, delayChildren: 0.3 } },
           }}
         >
           {/* Role pill */}
           <motion.div
-            variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.6 } } }}
-            className="mb-6"
+            variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.55 } } }}
+            className="mb-7"
           >
-            <span className="inline-flex items-center gap-2 glass px-4 py-1.5 rounded-full text-xs font-medium tracking-widest uppercase text-foreground/75">
+            <span
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium tracking-widest uppercase"
+              style={{
+                background: "rgba(255,250,245,0.55)",
+                border: "1px solid rgba(200,168,137,0.40)",
+                backdropFilter: "blur(12px)",
+                color: "#7A5A45",
+              }}
+            >
               {parts.map((part, i) => (
                 <span key={i} className="flex items-center gap-2">
-                  {i > 0 && <span className="opacity-40">·</span>}
+                  {i > 0 && <span style={{ opacity: 0.4 }}>·</span>}
                   {i === parts.length - 1
                     ? <em style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic" }}>{part}</em>
                     : part}
@@ -50,44 +127,49 @@ export function Hero() {
 
           {/* Name */}
           <motion.h1
-            variants={{ hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0, transition: { duration: 0.7 } } }}
-            className="font-heading leading-none mb-5"
-            style={{ fontSize: "clamp(2.8rem, 4.5vw, 5.2rem)", color: "#5C3C2C", letterSpacing: "-0.03em" }}
+            variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.7 } } }}
+            className="font-heading leading-none mb-6"
+            style={{
+              fontSize: "clamp(3rem, 5.5vw, 6rem)",
+              color: "#4A2E1E",
+              letterSpacing: "-0.03em",
+              textShadow: "0 2px 16px rgba(92,60,44,0.08)",
+            }}
           >
             {name.split(" ").map((word, i) => (
               <span key={i} className="block">{word}</span>
             ))}
           </motion.h1>
 
-          {/* Thin accent rule */}
+          {/* Accent rule */}
           <motion.div
-            variants={{ hidden: { scaleX: 0 }, show: { scaleX: 1, transition: { duration: 0.7, ease: [0.16,1,0.3,1] } } }}
-            className="mb-5 h-px w-12 origin-left"
-            style={{ background: "#C8A889" }}
+            variants={{ hidden: { scaleX: 0 }, show: { scaleX: 1, transition: { duration: 0.6, ease: [0.16,1,0.3,1] } } }}
+            className="mb-6 origin-left"
+            style={{ height: "1.5px", width: "56px", background: "linear-gradient(to right, #C8A889, #E8D4BC)" }}
           />
 
           {/* Bio */}
           <motion.p
             variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.6 } } }}
-            className="text-sm lg:text-base leading-relaxed mb-4 max-w-sm"
-            style={{ color: "#7A5A45", fontWeight: 300 }}
+            className="leading-relaxed mb-5"
+            style={{ color: "#6B4C38", fontWeight: 300, fontSize: "clamp(0.875rem, 1.2vw, 1.05rem)", maxWidth: "380px" }}
           >
             {bio}
           </motion.p>
 
-          {/* Tagline quote */}
+          {/* Tagline */}
           <motion.p
             variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.6 } } }}
-            className="font-heading italic text-base lg:text-lg leading-snug mb-7 max-w-xs"
-            style={{ color: "#5C3C2C", opacity: 0.85 }}
+            className="font-heading italic leading-snug mb-9"
+            style={{ color: "#5C3C2C", fontSize: "clamp(1rem, 1.5vw, 1.25rem)", maxWidth: "340px", opacity: 0.88 }}
           >
             "{tagline}"
           </motion.p>
 
           {/* CTAs */}
           <motion.div
-            variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.5 } } }}
-            className="flex items-center gap-3"
+            variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { duration: 0.5 } } }}
+            className="flex items-center gap-3 flex-wrap"
           >
             <Button onClick={() => scrollTo('#servicios')} size="lg">
               {ctaPrimary}
@@ -97,112 +179,7 @@ export function Hero() {
             </Button>
           </motion.div>
         </motion.div>
-
-        {/* CENTER — Thin vertical separator */}
-        <motion.div
-          initial={{ scaleY: 0, originY: 0 }}
-          animate={{ scaleY: 1 }}
-          transition={{ duration: 1.2, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="self-stretch my-12"
-          style={{ background: "linear-gradient(to bottom, transparent, #C8A889 20%, #C8A889 80%, transparent)", width: "1px" }}
-        />
-
-        {/* RIGHT — Portrait image */}
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 1.1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="relative overflow-hidden"
-        >
-          <img
-            src={`${import.meta.env.BASE_URL}images/genesis-portrait.png`}
-            alt="Génesis Nieto — UGC Creator & Fitness Coach"
-            className="absolute inset-0 w-full h-full object-cover object-top"
-          />
-          {/* Gradient fade edges to blend with background */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: "linear-gradient(to right, rgba(250,248,245,0.6) 0%, transparent 15%, transparent 80%, rgba(250,248,245,0.4) 100%)",
-            }}
-          />
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: "linear-gradient(to bottom, rgba(250,248,245,0.3) 0%, transparent 12%, transparent 75%, rgba(240,230,215,0.7) 100%)",
-            }}
-          />
-        </motion.div>
-      </div>
-
-      {/* ── Mobile: stacked layout ── */}
-      <div className="md:hidden flex flex-col min-h-[calc(100svh-80px)]">
-        {/* Portrait image — top half on mobile */}
-        <div className="relative h-64 xs:h-80 overflow-hidden">
-          <img
-            src={`${import.meta.env.BASE_URL}images/genesis-portrait.png`}
-            alt="Génesis Nieto"
-            className="w-full h-full object-cover object-top"
-          />
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{ background: "linear-gradient(to bottom, transparent 50%, rgba(250,248,245,0.95) 100%)" }}
-          />
-        </div>
-
-        {/* Text — below on mobile */}
-        <div className="flex-1 flex flex-col justify-center px-6 py-8 text-center">
-          <motion.span
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="inline-block glass px-4 py-1.5 rounded-full text-xs font-medium tracking-widest uppercase mb-6 text-foreground/75 self-center"
-          >
-            {parts.map((part, i) => (
-              <span key={i}>
-                {i > 0 && <span className="mx-1.5 opacity-40">·</span>}
-                {i === parts.length - 1
-                  ? <em style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic" }}>{part}</em>
-                  : part}
-              </span>
-            ))}
-          </motion.span>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.35 }}
-            className="font-heading text-5xl leading-none mb-6"
-            style={{ color: "#5C3C2C", letterSpacing: "-0.03em" }}
-          >
-            {name}
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.9, delay: 0.55 }}
-            className="text-sm leading-relaxed mb-6 max-w-xs mx-auto"
-            style={{ color: "#7A5A45", fontWeight: 300 }}
-          >
-            {bio}
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.7 }}
-            className="flex flex-col items-center gap-3"
-          >
-            <Button onClick={() => scrollTo('#servicios')} size="lg" className="w-full max-w-xs">
-              {ctaPrimary}
-            </Button>
-            <Button onClick={() => scrollTo('#contacto')} variant="glass" size="lg" className="w-full max-w-xs">
-              {ctaSecondary}
-            </Button>
-          </motion.div>
-        </div>
-      </div>
+      </motion.div>
     </section>
   );
 }
