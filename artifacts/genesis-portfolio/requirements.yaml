@@ -1,0 +1,13 @@
+packages:
+  "framer-motion": "For elegant, smooth scroll animations and page transitions matching the luxury aesthetic"
+  "clsx": "Utility for constructing className strings conditionally"
+  "tailwind-merge": "Utility to merge tailwind classes without style conflicts"
+
+images:
+  - path: "artifacts/genesis-portfolio/public/images/hero-bg.png"
+    description: "Soft, warm, elegant beige and cream abstract gradient mesh background, subtle natural light leaks, minimalist luxury aesthetic, smooth frosted glass feeling"
+    aspect_ratio: "16:9"
+
+notes:
+  - Static portfolio site, no backend integration required.
+  - All content is hardcoded as requested.

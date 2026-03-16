@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: 'Inter', sans-serif;
+  --font-heading: 'Cormorant Garamond', serif;
+
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  
+  --color-border: hsl(var(--border));
+  --color-glass-bg: rgba(255, 255, 255, 0.25);
+  --color-glass-border: rgba(255, 255, 255, 0.4);
+}
+
+:root {
+  /* Warm Beige/Cream Palette */
+  --background: 40 33% 96%; /* #F6F3ED */
+  --foreground: 210 11% 15%; /* Dark charcoal for contrast */
+  
+  --primary: 30 15% 35%; /* Warm deep taupe/brown */
+  --primary-foreground: 40 33% 96%; 
+  
+  --muted: 40 20% 90%;
+  --muted-foreground: 210 5% 40%;
+  
+  --border: 40 20% 85%;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-background text-foreground antialiased font-sans selection:bg-primary/20 selection:text-primary;
+    /* Soft noise texture for organic feel */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading tracking-tight;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-[rgba(255,255,255,0.35)] backdrop-blur-xl border border-[rgba(255,255,255,0.5)] shadow-[0_8px_32px_0_rgba(31,38,135,0.03)];
+  }
+  .glass-dark {
+    @apply bg-[rgba(0,0,0,0.05)] backdrop-blur-lg border border-[rgba(255,255,255,0.2)] shadow-[0_8px_32px_0_rgba(0,0,0,0.05)];
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+}
