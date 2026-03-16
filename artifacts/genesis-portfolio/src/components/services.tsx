@@ -36,7 +36,7 @@ export function Services() {
               <h3 className="text-3xl font-heading mb-3">Servicio On-Site</h3>
               <p className="text-xl text-foreground/80 font-medium mb-4">Grabación presencial en locación</p>
               <p className="text-foreground/70 mb-8 leading-relaxed">
-                Voy al lugar, grabo cada ángulo necesario y te entrego una pieza final lista para impactar en redes. Ideal para restaurantes, gimnasios, hoteles y experiencias.
+                Voy al lugar, grabo cada ángulo necesario y te entrego una pieza final lista para <em className="accent-italic not-italic font-heading italic text-xl">impactar</em> en redes. Ideal para restaurantes, gimnasios, hoteles y experiencias.
               </p>
               
               <ul className="space-y-4 mb-10 flex-grow">

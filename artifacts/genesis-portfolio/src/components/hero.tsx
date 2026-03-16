@@ -26,7 +26,7 @@ export function Hero() {
           transition={{ duration: 1, delay: 0.2 }}
         >
           <span className="inline-block glass px-4 py-1.5 rounded-full text-sm font-medium tracking-widest uppercase mb-8 text-foreground/80">
-            UGC Creator · Fitness Coach · Lifestyle
+            <span>UGC Creator · Fitness Coach · <em className="font-heading italic accent-italic text-base lowercase">Lifestyle</em></span>
           </span>
         </motion.div>
 
@@ -54,7 +54,7 @@ export function Hero() {
           transition={{ duration: 1, delay: 0.8 }}
           className="text-xl md:text-2xl font-heading italic text-foreground max-w-3xl mx-auto mb-12 text-balance"
         >
-          "No solo grabo contenido; capturo la experiencia real de tu marca para conectar con personas reales."
+          "No solo grabo contenido; capturo la experiencia <em className="accent-italic not-italic font-heading italic">real</em> de tu marca para conectar con personas <em className="accent-italic not-italic font-heading italic">reales</em>."
         </motion.p>
 
         <motion.div
