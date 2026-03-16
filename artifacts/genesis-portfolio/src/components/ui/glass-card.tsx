@@ -15,7 +15,13 @@ export function GlassCard({ children, className, dark = false, ...props }: Glass
     const el = shimmerRef.current;
     if (!el) return;
 
-    const SHIMMER_KEYFRAMES: Keyframe[] = [
+    const shimmerColor = dark
+      ? "linear-gradient(105deg, transparent 25%, rgba(255,220,150,0.12) 48%, rgba(195,162,122,0.08) 54%, transparent 72%)"
+      : "linear-gradient(105deg, transparent 25%, rgba(255,252,248,0.28) 48%, rgba(200,168,137,0.14) 54%, transparent 72%)";
+
+    el.style.background = shimmerColor;
+
+    const KEYFRAMES: Keyframe[] = [
       { transform: "translateX(-160%) skewX(-15deg)", opacity: 0 },
       { transform: "translateX(-80%) skewX(-15deg)", opacity: 1, offset: 0.1 },
       { transform: "translateX(80%) skewX(-15deg)", opacity: 1, offset: 0.9 },
@@ -28,18 +34,15 @@ export function GlassCard({ children, className, dark = false, ...props }: Glass
     };
 
     let anim: Animation | null = null;
-
     const trigger = () => {
       if (anim) { anim.cancel(); anim = null; }
-      anim = el.animate(SHIMMER_KEYFRAMES, OPTIONS);
+      anim = el.animate(KEYFRAMES, OPTIONS);
     };
 
-    // Stagger start so cards don't all shimmer simultaneously
     const initialDelay = Math.random() * 3500;
     const t = setTimeout(() => {
       trigger();
       const iv = setInterval(trigger, 5000);
-      // Cleanup interval on next effect run
       (el as any).__shimmerInterval = iv;
     }, initialDelay);
 
@@ -49,23 +52,27 @@ export function GlassCard({ children, className, dark = false, ...props }: Glass
       if (iv) clearInterval(iv);
       if (anim) anim.cancel();
     };
-  }, []);
+  }, [dark]);
 
   return (
     <motion.div
       className={cn(
         "rounded-3xl p-8 overflow-hidden relative transition-all duration-300",
         dark ? "glass-dark" : "glass",
-        "hover:shadow-[0_16px_48px_0_rgba(92,60,44,0.10)]",
+        dark
+          ? "hover:shadow-[0_20px_60px_0_rgba(0,0,0,0.35)]"
+          : "hover:shadow-[0_16px_48px_0_rgba(92,60,44,0.10)]",
         className
       )}
       {...props}
     >
-      {/* Inner café-tinted highlight ring */}
+      {/* Inner highlight ring */}
       <div
         className="absolute inset-0 rounded-3xl pointer-events-none"
         style={{
-          boxShadow: "inset 0 1px 0 rgba(200,168,137,0.55), inset 0 -1px 0 rgba(200,168,137,0.15)",
+          boxShadow: dark
+            ? "inset 0 1px 0 rgba(195,162,122,0.3), inset 0 -1px 0 rgba(195,162,122,0.08)"
+            : "inset 0 1px 0 rgba(200,168,137,0.55), inset 0 -1px 0 rgba(200,168,137,0.15)",
         }}
       />
 
@@ -74,7 +81,6 @@ export function GlassCard({ children, className, dark = false, ...props }: Glass
         ref={shimmerRef}
         className="absolute inset-0 pointer-events-none z-20"
         style={{
-          background: "linear-gradient(105deg, transparent 25%, rgba(255,252,248,0.28) 48%, rgba(200,168,137,0.14) 54%, transparent 72%)",
           transform: "translateX(-160%) skewX(-15deg)",
           opacity: 0,
         }}

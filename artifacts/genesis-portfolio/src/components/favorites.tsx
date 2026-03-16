@@ -8,7 +8,7 @@ export function Favorites() {
   const titleParts = sectionTitle.split("Favoritos");
 
   return (
-    <section id="favoritos" className="py-32 overflow-hidden">
+    <section id="favoritos" className="py-32 overflow-hidden texture-paper" style={{ backgroundColor: "#faf7f2" }}>
       <div className="max-w-6xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

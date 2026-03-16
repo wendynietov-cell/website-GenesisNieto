@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const links = [
-  { name: "Inicio", href: "#hero" },
   { name: "Marcas", href: "#marcas" },
   { name: "Galería", href: "#galeria" },
   { name: "Servicios", href: "#servicios" },
@@ -17,83 +15,113 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
+    const handleScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const scrollTo = (href: string) => {
     setMobileMenuOpen(false);
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
+    document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
     <motion.header
-      initial={{ y: -100 }}
+      initial={{ y: -72 }}
       animate={{ y: 0 }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
-        scrolled ? "py-4" : "py-6"
-      )}
+      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+      className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
+      style={{
+        background: scrolled
+          ? "rgba(250,248,245,0.90)"
+          : "rgba(250,248,245,0.76)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
+        borderBottom: "1px solid rgba(200,168,137,0.30)",
+        boxShadow: scrolled ? "0 4px 24px rgba(140,90,55,0.08)" : "0 1px 12px rgba(140,90,55,0.04)",
+      }}
     >
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="glass rounded-full px-6 py-3 flex items-center justify-between">
-          <a
-            href="#hero"
-            onClick={(e) => { e.preventDefault(); scrollTo("#hero"); }}
-            className="font-heading text-2xl font-medium text-foreground tracking-wide"
-          >
-            Génesis Nieto
-          </a>
+      {/* Full-width inner strip — aligned to page edges with padding */}
+      <div
+        className="flex items-center justify-between"
+        style={{ padding: "0 clamp(1.5rem, 4vw, 3.5rem)", height: "72px" }}
+      >
+        {/* Logo / Name */}
+        <a
+          href="#hero"
+          onClick={(e) => { e.preventDefault(); scrollTo("#hero"); }}
+          className="font-heading text-xl md:text-2xl font-medium transition-opacity hover:opacity-70"
+          style={{ color: "#5C3C2C", letterSpacing: "0.02em" }}
+        >
+          Génesis Nieto
+        </a>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8">
-            {links.slice(1).map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                onClick={(e) => { e.preventDefault(); scrollTo(link.href); }}
-                className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors"
-              >
-                {link.name}
-              </a>
-            ))}
-          </nav>
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-8 lg:gap-10">
+          {links.map((link) => (
+            <a
+              key={link.name}
+              href={link.href}
+              onClick={(e) => { e.preventDefault(); scrollTo(link.href); }}
+              className="text-xs font-medium transition-opacity hover:opacity-60"
+              style={{
+                color: "#5C3C2C",
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+              }}
+            >
+              {link.name}
+            </a>
+          ))}
+        </nav>
 
-          {/* Mobile Menu Toggle */}
-          <button
-            className="md:hidden p-2 text-foreground/80"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
+        {/* Mobile Menu Toggle */}
+        <button
+          className="md:hidden p-2 transition-opacity hover:opacity-60"
+          style={{ color: "#5C3C2C" }}
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle menu"
+        >
+          {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
       </div>
 
-      {/* Mobile Nav */}
+      {/* Mobile Dropdown */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="absolute top-full left-6 right-6 mt-4 glass rounded-3xl p-6 flex flex-col gap-4 md:hidden"
+          <motion.nav
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            style={{
+              overflow: "hidden",
+              borderTop: "1px solid rgba(200,168,137,0.25)",
+              background: "rgba(250,248,245,0.96)",
+              backdropFilter: "blur(24px)",
+            }}
           >
-            {links.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                onClick={(e) => { e.preventDefault(); scrollTo(link.href); }}
-                className="text-lg font-medium text-foreground/80 hover:text-foreground py-2 border-b border-white/20 last:border-0"
-              >
-                {link.name}
-              </a>
-            ))}
-          </motion.div>
+            <div
+              className="flex flex-col"
+              style={{ padding: "0.5rem clamp(1.5rem, 4vw, 3.5rem) 1rem" }}
+            >
+              {links.map((link) => (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  onClick={(e) => { e.preventDefault(); scrollTo(link.href); }}
+                  className="py-3 text-sm font-medium transition-opacity hover:opacity-60"
+                  style={{
+                    color: "#5C3C2C",
+                    letterSpacing: "0.10em",
+                    textTransform: "uppercase",
+                    borderBottom: "1px solid rgba(200,168,137,0.18)",
+                  }}
+                >
+                  {link.name}
+                </a>
+              ))}
+            </div>
+          </motion.nav>
         )}
       </AnimatePresence>
     </motion.header>

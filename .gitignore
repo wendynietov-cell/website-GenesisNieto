@@ -47,3 +47,12 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Temporary files
+.agents/
+attached_assets/
+
+# Environment variables (never commit)
+.env
+.env.local
+.env.*.local

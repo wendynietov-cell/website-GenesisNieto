@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useContent, SiteContent, MethodStep, Testimonial, Favorite } from "@/context/content-context";
+import { useContent, SiteContent, MethodStep, Testimonial, Favorite, GalleryVideo, GalleryPhoto } from "@/context/content-context";
 import { Lock, Eye, Save, RotateCcw, ChevronRight, ExternalLink, Check, X } from "lucide-react";
 
 const ADMIN_PASSWORD = "genesis2025";
@@ -69,10 +69,11 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
   );
 }
 
-type TabId = "hero" | "services" | "method" | "testimonials" | "favorites" | "collabs" | "contact" | "brands";
+type TabId = "hero" | "services" | "method" | "testimonials" | "favorites" | "collabs" | "contact" | "brands" | "gallery";
 
 const TABS: { id: TabId; label: string; emoji: string }[] = [
   { id: "hero", label: "Portada", emoji: "🏠" },
+  { id: "gallery", label: "Galería", emoji: "🎬" },
   { id: "services", label: "Servicios", emoji: "📦" },
   { id: "method", label: "El Proceso", emoji: "✦" },
   { id: "testimonials", label: "Testimonios", emoji: "💬" },
@@ -403,8 +404,144 @@ function BrandsTab() {
   );
 }
 
+function GalleryTab() {
+  const { content, updateContent } = useContent();
+
+  const updateVideo = (idx: number, key: keyof GalleryVideo, val: string) =>
+    updateContent((prev) => {
+      const videos = prev.gallery.videos.map((v, i) => i === idx ? { ...v, [key]: val } : v);
+      return { ...prev, gallery: { ...prev.gallery, videos } };
+    });
+
+  const toggleVideoType = (idx: number) =>
+    updateContent((prev) => {
+      const videos = prev.gallery.videos.map((v, i) =>
+        i === idx ? { ...v, type: v.type === "video" ? "photo" as const : "video" as const } : v
+      );
+      return { ...prev, gallery: { ...prev.gallery, videos } };
+    });
+
+  const addVideo = () =>
+    updateContent((prev) => ({
+      ...prev,
+      gallery: { ...prev.gallery, videos: [...prev.gallery.videos, { type: "photo" as const, src: "" }] },
+    }));
+
+  const removeVideo = (idx: number) =>
+    updateContent((prev) => ({
+      ...prev,
+      gallery: { ...prev.gallery, videos: prev.gallery.videos.filter((_, i) => i !== idx) },
+    }));
+
+  const updatePhoto = (idx: number, val: string) =>
+    updateContent((prev) => {
+      const photos = prev.gallery.photos.map((p, i) => i === idx ? { src: val } : p);
+      return { ...prev, gallery: { ...prev.gallery, photos } };
+    });
+
+  const addPhoto = () =>
+    updateContent((prev) => ({
+      ...prev,
+      gallery: { ...prev.gallery, photos: [...prev.gallery.photos, { src: "" }] },
+    }));
+
+  const removePhoto = (idx: number) =>
+    updateContent((prev) => ({
+      ...prev,
+      gallery: { ...prev.gallery, photos: prev.gallery.photos.filter((_, i) => i !== idx) },
+    }));
+
+  return (
+    <div>
+      <SectionCard title="Título de la sección">
+        <Field
+          label="Título"
+          value={content.gallery.sectionTitle}
+          onChange={(v) => updateContent((p) => ({ ...p, gallery: { ...p.gallery, sectionTitle: v } }))}
+        />
+      </SectionCard>
+
+      <SectionCard title="Tab Videos">
+        <p className="text-xs mb-4" style={{ color: "#B09070" }}>
+          Pega la URL del archivo. Si está en la carpeta <code>public/</code> usa <code>/nombre-archivo.mov</code>
+        </p>
+        {content.gallery.videos.map((v, i) => (
+          <div key={i} className="mb-4 p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.4)", border: "1px solid rgba(200,168,137,0.2)" }}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => toggleVideoType(i)}
+                  className="px-3 py-1 rounded-full text-xs font-medium transition-all"
+                  style={{
+                    background: v.type === "video" ? "#5C3C2C" : "rgba(200,168,137,0.3)",
+                    color: v.type === "video" ? "#FAF8F5" : "#8A6B52",
+                  }}
+                >
+                  {v.type === "video" ? "🎬 Video" : "📷 Foto"}
+                </button>
+                <span className="text-xs" style={{ color: "#B09070" }}>Slot {i + 1}</span>
+              </div>
+              <button onClick={() => removeVideo(i)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-red-50" style={{ color: "#B09070" }}>
+                <X size={13} />
+              </button>
+            </div>
+            {v.src && (
+              <div className="mb-2 h-20 rounded-lg overflow-hidden">
+                {v.type === "video"
+                  ? <video src={v.src} className="w-full h-full object-cover" />
+                  : <img src={v.src} className="w-full h-full object-cover" alt="" />
+                }
+              </div>
+            )}
+            <Field label="URL del archivo (video o imagen)" value={v.src} onChange={(val) => updateVideo(i, "src", val)} placeholder="/genesis-video-1.mov o https://..." />
+            {v.type === "video" && (
+              <Field label="URL imagen de portada (poster)" value={v.poster ?? ""} onChange={(val) => updateVideo(i, "poster", val)} placeholder="/genesis-1.jpg" />
+            )}
+            <Field label="Categoría (Fitness / Beauty / Gastro / Lifestyle)" value={v.category ?? ""} onChange={(val) => updateVideo(i, "category", val)} placeholder="Fitness" />
+          </div>
+        ))}
+        <button onClick={addVideo} className="w-full py-3 rounded-xl text-sm font-medium border-dashed border-2 transition-colors hover:bg-white/30" style={{ borderColor: "#C8A889", color: "#8A6B52" }}>
+          + Agregar slot de video
+        </button>
+      </SectionCard>
+
+      <SectionCard title="Tab Fotografías">
+        <p className="text-xs mb-4" style={{ color: "#B09070" }}>
+          Pega la URL de cada foto. Archivos locales: <code>/genesis-1.jpg</code>
+        </p>
+        {content.gallery.photos.map((p, i) => (
+          <div key={i} className="flex gap-2 mb-3 items-start">
+            <div className="flex-1">
+              {p.src && (
+                <div className="mb-1.5 h-16 rounded-lg overflow-hidden">
+                  <img src={p.src} className="w-full h-full object-cover" alt="" />
+                </div>
+              )}
+              <input
+                type="text"
+                value={p.src}
+                onChange={(e) => updatePhoto(i, e.target.value)}
+                placeholder="/genesis-2.jpg o https://..."
+                className="w-full px-3 py-2 rounded-xl text-sm outline-none transition-all focus:ring-2"
+                style={{ background: "rgba(255,255,255,0.7)", border: "1px solid rgba(200,168,137,0.3)", color: "#3a2519", "--tw-ring-color": "#C8A889" } as React.CSSProperties}
+              />
+            </div>
+            <button onClick={() => removePhoto(i)} className="mt-1 w-9 h-9 rounded-xl flex items-center justify-center hover:bg-red-50 shrink-0" style={{ color: "#B09070" }}>
+              <X size={14} />
+            </button>
+          </div>
+        ))}
+        <button onClick={addPhoto} className="w-full mt-2 py-3 rounded-xl text-sm font-medium border-dashed border-2 transition-colors hover:bg-white/30" style={{ borderColor: "#C8A889", color: "#8A6B52" }}>
+          + Agregar foto
+        </button>
+      </SectionCard>
+    </div>
+  );
+}
+
 const TAB_COMPONENTS: Record<TabId, React.FC> = {
   hero: HeroTab,
+  gallery: GalleryTab,
   services: ServicesTab,
   method: MethodTab,
   testimonials: TestimonialsTab,
@@ -416,14 +553,24 @@ const TAB_COMPONENTS: Record<TabId, React.FC> = {
 
 function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   const [activeTab, setActiveTab] = useState<TabId>("hero");
-  const [saved, setSaved] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const { resetContent } = useContent();
+  const { resetContent, saveToSupabase, isSaving, lastSaved, isLoading } = useContent();
   const ActiveComponent = TAB_COMPONENTS[activeTab];
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    setSaveStatus("saving");
+    setSaveError(null);
+    const { error } = await saveToSupabase();
+    if (error) {
+      setSaveStatus("error");
+      setSaveError(error);
+      setTimeout(() => setSaveStatus("idle"), 4000);
+    } else {
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus("idle"), 2500);
+    }
   };
 
   const handleReset = () => {
@@ -503,7 +650,11 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
               <h1 className="text-2xl font-heading font-medium" style={{ color: "#5C3C2C" }}>
                 {TABS.find((t) => t.id === activeTab)?.emoji} {TABS.find((t) => t.id === activeTab)?.label}
               </h1>
-              <p className="text-sm mt-1" style={{ color: "#B09070" }}>Los cambios se guardan automáticamente</p>
+              <p className="text-sm mt-1" style={{ color: "#B09070" }}>
+                {lastSaved
+                  ? `Último guardado: ${lastSaved.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}`
+                  : "Presiona Guardar para sincronizar con Supabase"}
+              </p>
             </div>
             <div className="flex gap-3">
               <button
@@ -516,20 +667,45 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
               </button>
               <button
                 onClick={handleSave}
-                className="flex items-center gap-1.5 px-5 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
-                style={{ background: saved ? "#4CAF50" : "#5C3C2C", color: "#FAF8F5" }}
+                disabled={isSaving || saveStatus === "saving"}
+                className="flex items-center gap-1.5 px-5 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
+                style={{
+                  background: saveStatus === "saved" ? "#4CAF50" : saveStatus === "error" ? "#EF4444" : "#5C3C2C",
+                  color: "#FAF8F5",
+                }}
               >
-                {saved ? <Check size={14} /> : <Save size={14} />}
-                {saved ? "¡Guardado!" : "Guardar"}
+                {saveStatus === "saving" ? (
+                  <><span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />Guardando...</>
+                ) : saveStatus === "saved" ? (
+                  <><Check size={14} />¡Guardado!</>
+                ) : saveStatus === "error" ? (
+                  <><X size={14} />Error</>
+                ) : (
+                  <><Save size={14} />Guardar</>
+                )}
               </button>
             </div>
           </div>
 
-          {/* Auto-save notice */}
-          <div className="flex items-center gap-2 px-4 py-3 rounded-xl mb-6 text-xs" style={{ background: "rgba(200,168,137,0.15)", color: "#8A6B52", border: "1px solid rgba(200,168,137,0.25)" }}>
-            <Check size={13} />
-            Los cambios que hagas aquí aparecen <strong>instantáneamente</strong> en el sitio web — no necesitas hacer nada más.
-          </div>
+          {/* Status notices */}
+          {saveStatus === "error" && saveError && (
+            <div className="flex items-center gap-2 px-4 py-3 rounded-xl mb-6 text-xs" style={{ background: "rgba(239,68,68,0.1)", color: "#EF4444", border: "1px solid rgba(239,68,68,0.25)" }}>
+              <X size={13} />
+              {saveError}
+            </div>
+          )}
+          {isLoading && (
+            <div className="flex items-center gap-2 px-4 py-3 rounded-xl mb-6 text-xs" style={{ background: "rgba(200,168,137,0.15)", color: "#8A6B52", border: "1px solid rgba(200,168,137,0.25)" }}>
+              <span className="w-3 h-3 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin" />
+              Cargando contenido desde Supabase...
+            </div>
+          )}
+          {!isLoading && saveStatus === "idle" && (
+            <div className="flex items-center gap-2 px-4 py-3 rounded-xl mb-6 text-xs" style={{ background: "rgba(200,168,137,0.15)", color: "#8A6B52", border: "1px solid rgba(200,168,137,0.25)" }}>
+              <Check size={13} />
+              Los cambios se guardan en <strong>Supabase</strong> al presionar Guardar. Se ven en el sitio de inmediato.
+            </div>
+          )}
 
           <ActiveComponent />
         </div>

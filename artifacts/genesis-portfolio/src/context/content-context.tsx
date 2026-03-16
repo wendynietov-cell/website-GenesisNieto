@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 export interface ServiceItem {
   title: string;
@@ -28,6 +29,17 @@ export interface Favorite {
 
 export interface Brand {
   name: string;
+}
+
+export interface GalleryVideo {
+  type: "video" | "photo";
+  src: string;
+  poster?: string;
+  category?: string;
+}
+
+export interface GalleryPhoto {
+  src: string;
 }
 
 export interface SiteContent {
@@ -85,6 +97,11 @@ export interface SiteContent {
     sectionTitle: string;
     sectionSubtitle: string;
     items: Brand[];
+  };
+  gallery: {
+    sectionTitle: string;
+    videos: GalleryVideo[];
+    photos: GalleryPhoto[];
   };
 }
 
@@ -180,16 +197,31 @@ const DEFAULT_CONTENT: SiteContent = {
       { name: "Hydra Labs" },
     ],
   },
+  gallery: {
+    sectionTitle: "Portafolio Seleccionado",
+    videos: [
+      { type: "video", src: "/genesis-video-1.mov", poster: "/genesis-1.jpg", category: "Fitness" },
+      { type: "photo", src: "/genesis-4.jpg", category: "Lifestyle" },
+      { type: "photo", src: "/genesis-6.jpg", category: "Beauty" },
+      { type: "photo", src: "/genesis-8.jpg", category: "Gastro" },
+    ],
+    photos: [
+      { src: "/genesis-1.jpg" },
+      { src: "/genesis-2.jpg" },
+      { src: "/genesis-3.jpg" },
+      { src: "/genesis-5.jpg" },
+      { src: "/genesis-7.jpg" },
+      { src: "/genesis-9.jpg" },
+    ],
+  },
 };
 
 const STORAGE_KEY = "genesis_site_content";
 
-function loadContent(): SiteContent {
+function loadFromLocalStorage(): SiteContent {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      return { ...DEFAULT_CONTENT, ...JSON.parse(stored) };
-    }
+    if (stored) return { ...DEFAULT_CONTENT, ...JSON.parse(stored) };
   } catch {
     // ignore
   }
@@ -201,12 +233,40 @@ interface ContentContextValue {
   updateContent: (updater: (prev: SiteContent) => SiteContent) => void;
   resetContent: () => void;
   defaultContent: SiteContent;
+  saveToSupabase: () => Promise<{ error: string | null }>;
+  isSaving: boolean;
+  isLoading: boolean;
+  lastSaved: Date | null;
 }
 
 const ContentContext = createContext<ContentContextValue | null>(null);
 
 export function ContentProvider({ children }: { children: React.ReactNode }) {
-  const [content, setContent] = useState<SiteContent>(loadContent);
+  const [content, setContent] = useState<SiteContent>(loadFromLocalStorage);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+
+  // Cargar desde Supabase al iniciar
+  useEffect(() => {
+    supabase
+      .from("site_content")
+      .select("content")
+      .eq("id", 1)
+      .single()
+      .then(({ data, error }) => {
+        if (!error && data?.content) {
+          const merged = { ...DEFAULT_CONTENT, ...(data.content as SiteContent) };
+          setContent(merged);
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+          } catch {
+            // ignore
+          }
+        }
+        setIsLoading(false);
+      });
+  }, []);
 
   const updateContent = useCallback((updater: (prev: SiteContent) => SiteContent) => {
     setContent((prev) => {
@@ -220,13 +280,30 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const saveToSupabase = useCallback(async (): Promise<{ error: string | null }> => {
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("site_content")
+        .update({ content })
+        .eq("id", 1);
+      if (error) return { error: error.message };
+      setLastSaved(new Date());
+      return { error: null };
+    } catch (e) {
+      return { error: "Error de conexión con Supabase" };
+    } finally {
+      setIsSaving(false);
+    }
+  }, [content]);
+
   const resetContent = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
     setContent(DEFAULT_CONTENT);
   }, []);
 
   return (
-    <ContentContext.Provider value={{ content, updateContent, resetContent, defaultContent: DEFAULT_CONTENT }}>
+    <ContentContext.Provider value={{ content, updateContent, resetContent, defaultContent: DEFAULT_CONTENT, saveToSupabase, isSaving, isLoading, lastSaved }}>
       {children}
     </ContentContext.Provider>
   );
