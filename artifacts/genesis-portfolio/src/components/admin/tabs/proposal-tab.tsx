@@ -49,7 +49,7 @@ const defaultData: ProposalData = {
 function ProposalPreview({ data }: { data: ProposalData }) {
   return (
     <div
-      id="proposal-preview"
+      id="proposal-print"
       className="bg-white text-[#2C1A0A]"
       style={{
         width: "100%",
@@ -162,30 +162,18 @@ export default function ProposalTab() {
   const removeEntregable = (id: number) =>
     u("entregables", data.entregables.filter((e) => e.id !== id));
 
-  const handlePrint = () => {
-    const style = document.createElement("style");
-    style.id = "__proposal_print__";
-    style.innerHTML = `
-      @media print {
-        body > *:not(#__proposal_root__) { display: none !important; }
-        #proposal-preview { display: block !important; }
-        @page { size: A4; margin: 0; }
-      }
-    `;
-    document.head.appendChild(style);
-    const el = document.getElementById("proposal-preview");
-    if (el) {
-      const clone = el.cloneNode(true) as HTMLElement;
-      clone.id = "__proposal_root__";
-      clone.style.cssText = "position:fixed;inset:0;z-index:99999;background:white;";
-      document.body.appendChild(clone);
-      window.print();
-      document.body.removeChild(clone);
-    }
-    document.head.removeChild(style);
-  };
+  const handlePrint = () => window.print();
 
   return (
+    <>
+    <style>{`
+      @media print {
+        body * { visibility: hidden !important; }
+        #proposal-print, #proposal-print * { visibility: visible !important; }
+        #proposal-print { position: fixed; top: 0; left: 0; width: 100%; }
+        @page { size: A4; margin: 0; }
+      }
+    `}</style>
     <div className="flex flex-col xl:flex-row gap-6">
       {/* ── FORMULARIO ── */}
       <div className="xl:w-[45%] space-y-0">
@@ -269,5 +257,6 @@ export default function ProposalTab() {
         </div>
       </div>
     </div>
+    </>
   );
 }

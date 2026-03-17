@@ -64,7 +64,7 @@ function calcTotal(servicios: Servicio[]): string {
 function InvoicePreview({ data }: { data: InvoiceData }) {
   return (
     <div
-      id="invoice-preview"
+      id="invoice-print"
       className="bg-white text-[#2C1A0A]"
       style={{
         width: "100%",
@@ -206,30 +206,18 @@ export default function InvoiceTab() {
   const removeServicio = (id: number) =>
     u("servicios", data.servicios.filter((s) => s.id !== id));
 
-  const handlePrint = () => {
-    const style = document.createElement("style");
-    style.id = "__invoice_print__";
-    style.innerHTML = `
-      @media print {
-        body > *:not(#__invoice_root__) { display: none !important; }
-        #invoice-preview { display: block !important; }
-        @page { size: A4; margin: 0; }
-      }
-    `;
-    document.head.appendChild(style);
-    const el = document.getElementById("invoice-preview");
-    if (el) {
-      const clone = el.cloneNode(true) as HTMLElement;
-      clone.id = "__invoice_root__";
-      clone.style.cssText = "position:fixed;inset:0;z-index:99999;background:white;";
-      document.body.appendChild(clone);
-      window.print();
-      document.body.removeChild(clone);
-    }
-    document.head.removeChild(style);
-  };
+  const handlePrint = () => window.print();
 
   return (
+    <>
+    <style>{`
+      @media print {
+        body * { visibility: hidden !important; }
+        #invoice-print, #invoice-print * { visibility: visible !important; }
+        #invoice-print { position: fixed; top: 0; left: 0; width: 100%; }
+        @page { size: A4; margin: 0; }
+      }
+    `}</style>
     <div className="flex flex-col xl:flex-row gap-6">
       {/* ── FORMULARIO ── */}
       <div className="xl:w-[45%] space-y-0">
@@ -322,5 +310,6 @@ export default function InvoiceTab() {
         </div>
       </div>
     </div>
+    </>
   );
 }
