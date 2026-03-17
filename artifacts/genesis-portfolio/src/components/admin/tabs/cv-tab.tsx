@@ -45,12 +45,6 @@ const globalStyles = `
   .cv-layout{display:flex;flex-direction:column;gap:24px;align-items:flex-start;}
   .cv-form{width:100%;} .cv-panel{width:100%;position:static;}
   @media(min-width:768px){.cv-layout{flex-direction:row;}.cv-form{width:45%;flex-shrink:0;}.cv-panel{flex:1;position:sticky;top:80px;}}
-  @media print {
-    body * { visibility: hidden !important; }
-    #cv-preview-print, #cv-preview-print * { visibility: visible !important; }
-    #cv-preview-print { position: fixed !important; top: 0 !important; left: 0 !important; width: 595px !important; height: 842px !important; transform: none !important; overflow: hidden !important; }
-    @page { size: A4 portrait; margin: 0; }
-  }
 `;
 
 // Shared components
@@ -291,7 +285,20 @@ export default function CvTab() {
   const updateEdu = (i: number, k: keyof CvEducacion, v: string) => setCv(p => ({ ...p, educacion: p.educacion.map((e, idx) => idx === i ? { ...e, [k]: v } : e) }));
   const addEdu = () => setCv(p => ({ ...p, educacion: [...p.educacion, { institucion: "", titulo: "", anio: "" }] }));
   const removeEdu = (i: number) => setCv(p => ({ ...p, educacion: p.educacion.filter((_, idx) => idx !== i) }));
-  const handlePrint = () => window.print();
+  const handlePrint = () => {
+    const el = document.getElementById("cv-preview-print");
+    if (!el) return;
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.write(
+      `<!DOCTYPE html><html><head><meta charset="utf-8">` +
+      `<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">` +
+      `<style>*{margin:0;padding:0;box-sizing:border-box;}body{width:595px;height:842px;overflow:hidden;background:white;}@page{size:A4 portrait;margin:0mm;}</style>` +
+      `</head><body>${el.outerHTML}</body></html>`
+    );
+    win.document.close();
+    setTimeout(() => { win.print(); win.close(); }, 900);
+  };
   const tags = cv.habilidades.split(",").map(t => t.trim()).filter(Boolean);
 
   return (

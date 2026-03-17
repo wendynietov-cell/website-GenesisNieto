@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { Download, Plus, X, FileText, User, Briefcase, DollarSign, StickyNote, Sparkles } from "lucide-react";
+import { Download, Plus, X, FileText, User, Briefcase, DollarSign, StickyNote, Sparkles, Clock, Eye, Trash2 } from "lucide-react";
+import { useContent, Proposal } from "@/context/content-context";
 
 /* ─────────────────────────────────────────────
    TYPES
@@ -9,30 +10,7 @@ interface Entregable {
   texto: string;
 }
 
-interface ProposalData {
-  numero: string;
-  fecha: string;
-  validez: string;
-  // Creadora
-  creadoraNombre: string;
-  creadoraRol: string;
-  creadoraInstagram: string;
-  creadoraWebsite: string;
-  // Cliente
-  clienteNombre: string;
-  clienteEmpresa: string;
-  clienteEmail: string;
-  titulo: string;
-  descripcion: string;
-  entregables: Entregable[];
-  precio: string;
-  formaPago: string;
-  tiempoEntrega: string;
-  revisiones: string;
-  notas: string;
-}
-
-const defaultData: ProposalData = {
+const defaultData: Omit<Proposal, 'id' | 'createdAt'> = {
   numero: "001",
   fecha: new Date().toLocaleDateString("es-CO"),
   validez: "15 días",
@@ -49,7 +27,7 @@ const defaultData: ProposalData = {
   precio: "",
   formaPago: "50% al inicio · 50% al finalizar",
   tiempoEntrega: "",
-  revisiones: "2 rondas de revisión incluidas",
+  revisiones: "2 revisiones incluidas",
   notas: "",
 };
 
@@ -170,8 +148,8 @@ function EditCard({
 /* ─────────────────────────────────────────────
    PROPOSAL PREVIEW — elegant two-tone design
 ───────────────────────────────────────────── */
-function ProposalPreview({ data }: { data: ProposalData }) {
-  const filledEntregables = data.entregables.filter((e) => e.texto);
+function ProposalPreview({ data }: { data: Omit<Proposal, 'id' | 'createdAt'> }) {
+  const filledEntregables = data.entregables.filter((e: Entregable) => e.texto);
 
   return (
     <>
@@ -340,7 +318,7 @@ function ProposalPreview({ data }: { data: ProposalData }) {
                 Entregables
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                {filledEntregables.map((e) => (
+                {filledEntregables.map((e: Entregable) => (
                   <div
                     key={e.id}
                     style={{
@@ -491,7 +469,7 @@ function ProposalPreview({ data }: { data: ProposalData }) {
 }
 
 /* Scales the 595px preview to fit any container */
-function ScaledPreview({ data }: { data: ProposalData }) {
+function ScaledPreview({ data }: { data: Omit<Proposal, 'id' | 'createdAt'> }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.75);
 
@@ -527,8 +505,11 @@ function ScaledPreview({ data }: { data: ProposalData }) {
    MAIN TAB
 ───────────────────────────────────────────── */
 export default function ProposalTab() {
-  const [data, setData] = useState<ProposalData>(defaultData);
-  const u = <K extends keyof ProposalData>(key: K, val: ProposalData[K]) =>
+  const { content, updateContent } = useContent();
+  const [data, setData] = useState<Omit<Proposal, 'id' | 'createdAt'>>(defaultData);
+  const [showHistory, setShowHistory] = useState(false);
+  
+  const u = <K extends keyof Omit<Proposal, 'id' | 'createdAt'>>(key: K, val: Omit<Proposal, 'id' | 'createdAt'>[K]) =>
     setData((p) => ({ ...p, [key]: val }));
 
   const addEntregable = () =>
@@ -538,7 +519,56 @@ export default function ProposalTab() {
   const removeEntregable = (id: number) =>
     u("entregables", data.entregables.filter((e) => e.id !== id));
 
-  const handlePrint = () => window.print();
+  const handlePrint = () => {
+    const el = document.getElementById("proposal-print");
+    if (!el) return;
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.write(
+      `<!DOCTYPE html><html><head><meta charset="utf-8">` +
+      `<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">` +
+      `<style>*{margin:0;padding:0;box-sizing:border-box;}body{width:595px;min-height:842px;background:white;}@page{size:A4 portrait;margin:0mm;}</style>` +
+      `</head><body>${el.outerHTML}</body></html>`
+    );
+    win.document.close();
+    setTimeout(() => { win.print(); win.close(); }, 900);
+  };
+
+  const saveProposal = () => {
+    const newProposal: Proposal = {
+      ...data,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString()
+    };
+    
+    updateContent(prev => ({
+      ...prev,
+      proposals: {
+        items: [newProposal, ...prev.proposals.items]
+      }
+    }));
+    
+    // Reset form
+    setData({
+      ...defaultData,
+      numero: (parseInt(data.numero) + 1).toString().padStart(3, '0')
+    });
+  };
+  
+  const loadProposal = (proposal: Proposal) => {
+    const { id, createdAt, ...proposalData } = proposal;
+    setData(proposalData);
+    setShowHistory(false);
+  };
+  
+  const deleteProposal = (id: string) => {
+    updateContent(prev => ({
+      ...prev,
+      proposals: {
+        items: prev.proposals.items.filter(p => p.id !== id)
+      }
+    }));
+  };
 
   return (
     <>
@@ -671,14 +701,24 @@ export default function ProposalTab() {
           </EditCard>
 
           {/* Download */}
-          <button
-            onClick={handlePrint}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold uppercase tracking-wider transition-all hover:opacity-90 active:scale-[0.98]"
-            style={{ background: "#3D2518", color: "#FAF8F5", letterSpacing: "0.06em" }}
-          >
-            <Download size={15} />
-            Descargar propuesta en PDF
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={saveProposal}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold uppercase tracking-wider transition-all hover:opacity-90 active:scale-[0.98]"
+              style={{ background: "#C3A27A", color: "#FAF8F5", letterSpacing: "0.06em" }}
+            >
+              <Plus size={15} />
+              Guardar propuesta
+            </button>
+            <button
+              onClick={handlePrint}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold uppercase tracking-wider transition-all hover:opacity-90 active:scale-[0.98]"
+              style={{ background: "#3D2518", color: "#FAF8F5", letterSpacing: "0.06em" }}
+            >
+              <Download size={15} />
+              Descargar PDF
+            </button>
+          </div>
         </div>
 
         {/* ── PREVIEW ── */}
@@ -707,6 +747,112 @@ export default function ProposalTab() {
           </div>
         </div>
       </div>
+
+      {/* ── HISTORIAL DE PROPUESTAS ── */}
+      <section style={{ marginTop: "48px" }}>
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-bold text-[#3D2518] flex items-center gap-2">
+            <Clock size={20} />
+            Historial de Propuestas ({content.proposals.items.length})
+          </h3>
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+            style={{ background: showHistory ? "#C3A27A" : "#F5F0E8", color: showHistory ? "#FAF8F5" : "#3D2518" }}
+          >
+            {showHistory ? "Ocultar" : "Mostrar"} historial
+          </button>
+        </div>
+
+        {showHistory && (
+          <div className="space-y-4">
+            {content.proposals.items.length === 0 ? (
+              <div className="text-center py-12 rounded-2xl border border-dashed" style={{ borderColor: "#C3A27A", background: "#FAF8F5" }}>
+                <FileText size={48} style={{ color: "#C3A27A", margin: "0 auto 16px" }} />
+                <p className="text-sm font-medium" style={{ color: "#3D2518" }}>No hay propuestas guardadas</p>
+                <p className="text-xs mt-2" style={{ color: "#8B7355" }}>Las propuestas que guardes aparecerán aquí</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {content.proposals.items.map((proposal) => (
+                  <div
+                    key={proposal.id}
+                    className="group bg-white rounded-2xl border border-[#E8DFD3] shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden"
+                  >
+                    {/* Header */}
+                    <div className="p-4 border-b border-[#E8DFD3]" style={{ background: "#FAF8F5" }}>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ background: "#C3A27A", color: "#FAF8F5" }}>
+                              #{proposal.numero}
+                            </span>
+                            <span className="text-xs" style={{ color: "#8B7355" }}>
+                              {new Date(proposal.createdAt).toLocaleDateString("es-CO")}
+                            </span>
+                          </div>
+                          <h4 className="font-semibold text-sm" style={{ color: "#3D2518" }}>
+                            {proposal.titulo || "Sin título"}
+                          </h4>
+                          <p className="text-xs mt-1" style={{ color: "#8B7355" }}>
+                            {proposal.clienteNombre} {proposal.clienteEmpresa && `· ${proposal.clienteEmpresa}`}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => deleteProposal(proposal.id)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-red-50"
+                          style={{ color: "#DC2626" }}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-4">
+                      <div className="space-y-2 text-xs" style={{ color: "#6B5D4F" }}>
+                        <div className="flex justify-between">
+                          <span>Precio:</span>
+                          <span className="font-semibold">{proposal.precio || "No definido"}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Entrega:</span>
+                          <span className="font-semibold">{proposal.tiempoEntrega || "No definido"}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Entregables:</span>
+                          <span className="font-semibold">{proposal.entregables.filter(e => e.texto).length}</span>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex gap-2 mt-4">
+                        <button
+                          onClick={() => loadProposal(proposal)}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all"
+                          style={{ background: "#3D2518", color: "#FAF8F5" }}
+                        >
+                          <Eye size={12} /> Cargar
+                        </button>
+                        <button
+                          onClick={() => {
+                            setData(proposal);
+                            handlePrint();
+                          }}
+                          className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all"
+                          style={{ background: "#C3A27A", color: "#FAF8F5" }}
+                        >
+                          <Download size={12} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </section>
     </>
   );
 }

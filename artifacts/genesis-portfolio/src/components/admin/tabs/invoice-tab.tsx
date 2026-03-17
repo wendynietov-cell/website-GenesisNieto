@@ -206,7 +206,20 @@ export default function InvoiceTab() {
   const removeServicio = (id: number) =>
     u("servicios", data.servicios.filter((s) => s.id !== id));
 
-  const handlePrint = () => window.print();
+  const handlePrint = () => {
+    const el = document.getElementById("invoice-print");
+    if (!el) return;
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.write(
+      `<!DOCTYPE html><html><head><meta charset="utf-8">` +
+      `<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">` +
+      `<style>*{margin:0;padding:0;box-sizing:border-box;}body{width:595px;min-height:842px;background:white;}@page{size:A4 portrait;margin:0mm;}</style>` +
+      `</head><body>${el.outerHTML}</body></html>`
+    );
+    win.document.close();
+    setTimeout(() => { win.print(); win.close(); }, 900);
+  };
 
   return (
     <>

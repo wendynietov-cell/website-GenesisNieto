@@ -1,28 +1,34 @@
 import React, { useState } from "react";
 import { useContent, Favorite } from "@/context/content-context";
 import { supabase } from "@/lib/supabase";
-import { X, Plus } from "lucide-react";
-import { Field, Card, inputBase } from "@/components/admin/shared";
+import { X, Plus, Upload, Tag, Package, ChevronDown } from "lucide-react";
+import { Field, Card } from "@/components/admin/shared";
+
+// Categorías unificadas para consistencia
+const CATEGORIES = ["Skincare", "Makeup", "Fitness", "Wellness", "Gastro"];
 
 export default function FavoritesTab() {
   const { content, updateContent } = useContent();
   const [uploading, setUploading] = useState<{ [key: number]: boolean }>({});
 
   const updateItem = (idx: number, key: keyof Favorite, val: string) =>
-    updateContent((prev) => {
-      const items = prev.favorites.items.map((f, i) =>
-        i === idx ? { ...f, [key]: val } : f
-      );
-      return { ...prev, favorites: { ...prev.favorites, items } };
-    });
+    updateContent((prev) => ({
+      ...prev,
+      favorites: {
+        ...prev.favorites,
+        items: prev.favorites.items.map((f, i) => (i === idx ? { ...f, [key]: val } : f)),
+      },
+    }));
+
   const addItem = () =>
     updateContent((prev) => ({
       ...prev,
       favorites: {
         ...prev.favorites,
-        items: [...prev.favorites.items, { category: "", img: "", productName: "" }],
+        items: [...prev.favorites.items, { category: CATEGORIES[0], img: "", productName: "" }],
       },
     }));
+
   const removeItem = (idx: number) =>
     updateContent((prev) => ({
       ...prev,
@@ -33,160 +39,130 @@ export default function FavoritesTab() {
     }));
 
   const handleImageUpload = async (idx: number, file: File) => {
-    setUploading(prev => ({ ...prev, [idx]: true }));
-
+    setUploading((prev) => ({ ...prev, [idx]: true }));
     try {
-      // Crear nombre de archivo único
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split(".").pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `favorites/${fileName}`;
 
-      // Subir a Supabase Storage
       const { error: uploadError } = await supabase.storage
-        .from('favorites-images')
+        .from("favorites-images")
         .upload(filePath, file);
 
-      if (uploadError) {
-        console.error('Error subiendo imagen:', uploadError);
-        // Fallback a base64 si falla la subida
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64String = reader.result as string;
-          updateItem(idx, "img", base64String);
-        };
-        reader.readAsDataURL(file);
-        return;
-      }
+      if (uploadError) throw uploadError;
 
-      // Obtener URL pública
       const { data: { publicUrl } } = supabase.storage
-        .from('favorites-images')
+        .from("favorites-images")
         .getPublicUrl(filePath);
 
       updateItem(idx, "img", publicUrl);
     } catch (error) {
-      console.error('Error en la subida:', error);
-      // Fallback a base64
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        updateItem(idx, "img", base64String);
-      };
-      reader.readAsDataURL(file);
+      console.error("Error:", error);
     } finally {
-      setUploading(prev => ({ ...prev, [idx]: false }));
+      setUploading((prev) => ({ ...prev, [idx]: false }));
     }
   };
 
   return (
-    <div>
-      <Card title="Encabezado de sección">
-        <Field
-          label="Título de la sección"
-          value={content.favorites.sectionTitle}
-          onChange={(v) =>
-            updateContent((p) => ({ ...p, favorites: { ...p.favorites, sectionTitle: v } }))
-          }
-        />
-        <Field
-          label="Subtítulo"
-          value={content.favorites.sectionSubtitle}
-          onChange={(v) =>
-            updateContent((p) => ({ ...p, favorites: { ...p.favorites, sectionSubtitle: v } }))
-          }
-        />
+    <div className="space-y-8">
+      {/* HEADER */}
+      <Card title="Sección Favoritos">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Field
+            label="Título Principal"
+            value={content.favorites.sectionTitle}
+            onChange={(v) => updateContent(p => ({ ...p, favorites: { ...p.favorites, sectionTitle: v } }))}
+          />
+          <Field
+            label="Subtítulo"
+            value={content.favorites.sectionSubtitle}
+            onChange={(v) => updateContent(p => ({ ...p, favorites: { ...p.favorites, sectionSubtitle: v } }))}
+          />
+        </div>
       </Card>
-      {content.favorites.items.map((f, i) => (
-        <div key={i} className="relative">
+
+      {/* PRODUCT GRID */}
+      <section>
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-bold text-[#5C3C2C] flex items-center gap-2">
+            <Package size={20} /> Mis Favoritos
+          </h3>
           <button
-            onClick={() => removeItem(i)}
-            className="absolute top-4 right-4 z-10 w-7 h-7 rounded-full flex items-center justify-center transition-colors hover:bg-red-100"
-            style={{ color: "#B09070" }}
+            onClick={addItem}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-bold text-white shadow-lg transition-transform active:scale-95 bg-[#5C3C2C] hover:bg-[#3D281D]"
           >
-            <X size={14} />
+            <Plus size={18} /> Nuevo Producto
           </button>
-          <Card title={`Favorito ${i + 1}`}>
-            {f.img && (
-              <div className="mb-3 rounded-xl overflow-hidden h-32 w-full">
-                <img src={f.img} alt={f.category} className="w-full h-full object-cover" />
-              </div>
-            )}
-            <Field
-              label="Categoría (ej: Skincare)"
-              value={f.category}
-              onChange={(v) => updateItem(i, "category", v)}
-            />
-            <Field
-              label="Nombre del producto (opcional)"
-              value={f.productName}
-              onChange={(v) => updateItem(i, "productName", v)}
-              placeholder="ej: Proteína Whey Isolate..."
-            />
-            <div className="mb-4">
-              <label
-                className="block text-xs font-semibold uppercase tracking-wider mb-2"
-                style={{ color: "#8A6B52" }}
-              >
-                Imagen del producto
-              </label>
-              <div className="space-y-3">
-                <div className="flex gap-2">
-                  <div className="flex-1 relative">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleImageUpload(i, file);
-                      }}
-                      disabled={uploading[i]}
-                      className="w-full px-3 py-2.5 rounded-xl text-sm outline-none transition-all focus:ring-2 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold disabled:opacity-50"
-                      style={{
-                        ...inputBase,
-                        "--tw-ring-color": "#C8A889",
-                        "file:bg": "#5C3C2C",
-                        "file:text": "#FAF8F5"
-                      } as React.CSSProperties}
-                    />
-                    {uploading[i] && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-xl">
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                          <span className="text-xs" style={{ color: "#5C3C2C" }}>Subiendo...</span>
-                        </div>
-                      </div>
-                    )}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {content.favorites.items.map((f, i) => (
+            <div key={i} className="group bg-white rounded-[2.5rem] border border-stone-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col">
+              
+              {/* Image Container */}
+              <div className="relative aspect-square bg-stone-100 overflow-hidden">
+                {f.img ? (
+                  <img src={f.img} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-stone-300">
+                    <Tag size={48} strokeWidth={1} />
                   </div>
-                  <button
-                    onClick={() => updateItem(i, "img", "")}
-                    className="px-3 py-2.5 rounded-xl text-xs font-medium transition-colors hover:bg-red-50 flex items-center gap-1"
-                    style={{
-                      color: "#B09070",
-                      border: "1px solid rgba(200,168,137,0.25)"
-                    }}
-                  >
-                    <X size={12} />
-                    Limpiar
-                  </button>
+                )}
+                
+                {/* Botón Eliminar */}
+                <button
+                  onClick={() => removeItem(i)}
+                  className="absolute top-4 right-4 p-2 rounded-full bg-red-500 text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                >
+                  <X size={14} />
+                </button>
+
+                {/* Subida rápida al hacer hover */}
+                <label className="absolute inset-0 bg-black/20 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/*" 
+                    onChange={(e) => e.target.files?.[0] && handleImageUpload(i, e.target.files[0])}
+                  />
+                  <div className="bg-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 text-[#5C3C2C] shadow-xl">
+                    <Upload size={14} /> {uploading[i] ? "Subiendo..." : "Cambiar Imagen"}
+                  </div>
+                </label>
+              </div>
+
+              {/* Form Content */}
+              <div className="p-6 space-y-4">
+                {/* SELECT CATEGORÍA */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[#C8A889]">Categoría</label>
+                  <div className="relative">
+                    <select
+                      value={f.category}
+                      onChange={(e) => updateItem(i, "category", e.target.value)}
+                      className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 text-sm font-medium text-[#5C3C2C] appearance-none focus:ring-2 focus:ring-[#C8A889] outline-none cursor-pointer"
+                    >
+                      {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                    </select>
+                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                  </div>
                 </div>
-                <Field
-                  label="O URL de imagen (opcional)"
-                  value={f.img && !f.img.startsWith('data:') && !f.img.startsWith('blob:') ? f.img : ""}
-                  onChange={(v) => updateItem(i, "img", v)}
-                  placeholder="https://..."
-                />
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[#C8A889]">Producto</label>
+                  <input
+                    type="text"
+                    value={f.productName}
+                    onChange={(e) => updateItem(i, "productName", e.target.value)}
+                    placeholder="Ej: Suero de Vitamina C"
+                    className="w-full bg-transparent border-b border-stone-100 py-1 text-sm outline-none focus:border-[#C8A889] transition-colors font-medium text-[#5C3C2C]"
+                  />
+                </div>
               </div>
             </div>
-          </Card>
+          ))}
         </div>
-      ))}
-      <button
-        onClick={addItem}
-        className="w-full py-3 rounded-xl text-sm font-medium border-dashed border-2 transition-colors hover:bg-white/60 flex items-center justify-center gap-2"
-        style={{ borderColor: "#C8A889", color: "#8A6B52" }}
-      >
-        <Plus size={14} /> Agregar favorito
-      </button>
+      </section>
     </div>
   );
 }
