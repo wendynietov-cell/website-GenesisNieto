@@ -27,6 +27,50 @@ export interface Favorite {
   productName: string;
 }
 
+export interface Proposal {
+  id: string;
+  numero: string;
+  fecha: string;
+  validez: string;
+  creadoraNombre: string;
+  creadoraRol: string;
+  creadoraInstagram: string;
+  creadoraWebsite: string;
+  clienteNombre: string;
+  clienteEmpresa: string;
+  clienteEmail: string;
+  titulo: string;
+  descripcion: string;
+  entregables: { id: number; texto: string }[];
+  precio: string;
+  formaPago: string;
+  tiempoEntrega: string;
+  revisiones: string;
+  notas: string;
+  createdAt: string;
+}
+
+export interface Invoice {
+  id: string;
+  numero: string;
+  fecha: string;
+  vencimiento: string;
+  prestadorNombre: string;
+  prestadorIdentificacion: string;
+  prestadorTelefono: string;
+  prestadorEmail: string;
+  banco: string;
+  tipoCuenta: string;
+  numeroCuenta: string;
+  clienteNombre: string;
+  clienteIdentificacion: string;
+  clienteEmpresa: string;
+  clienteDireccion: string;
+  servicios: { id: number; descripcion: string; valor: string }[];
+  notas: string;
+  createdAt: string;
+}
+
 export interface Brand {
   name: string;
   category: string;
@@ -104,6 +148,12 @@ export interface SiteContent {
     sectionTitle: string;
     videos: GalleryVideo[];
     photos: GalleryPhoto[];
+  };
+  proposals: {
+    items: Proposal[];
+  };
+  invoices: {
+    items: Invoice[];
   };
 }
 
@@ -193,12 +243,10 @@ const DEFAULT_CONTENT: SiteContent = {
       { name: "Atenea",         category: "Maquillaje", tab: "marcas"   },
       { name: "Miis Cosmetics", category: "Maquillaje", tab: "marcas"   },
       { name: "Vive Beauty",    category: "Skincare",   tab: "marcas"   },
-      { name: "Trendy",         category: "Maquillaje", tab: "marcas"   },
-      { name: "Anik",           category: "Maquillaje", tab: "marcas"   },
     ] as Brand[],
   },
   gallery: {
-    sectionTitle: "Portafolio Seleccionado",
+    sectionTitle: "Galería de Contenido",
     videos: [
       { type: "video", src: "/genesis-video-1.mov", poster: "/genesis-1.jpg", category: "Fitness" },
       { type: "video", src: "/genesis-video-2.mov", poster: "/genesis-4.jpg", category: "Lifestyle" },
@@ -213,6 +261,12 @@ const DEFAULT_CONTENT: SiteContent = {
       { src: "/genesis-7.jpg" },
       { src: "/genesis-9.jpg" },
     ],
+  },
+  proposals: {
+    items: [],
+  },
+  invoices: {
+    items: [],
   },
 };
 

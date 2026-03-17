@@ -20,7 +20,7 @@ export function Hero() {
   return (
     <section
       id="hero"
-      className="relative flex items-start md:items-center justify-center md:min-h-svh px-6 pt-24 pb-6 md:pt-28 md:pb-16 overflow-hidden"
+      className="relative flex items-start md:items-center justify-center md:min-h-svh px-3 pt-[4.5rem] pb-3 md:px-6 md:pt-28 md:pb-16 overflow-hidden"
       style={{ backgroundColor: "#faf7f2" }}
     >
       {/* ══════════════════════
@@ -30,7 +30,7 @@ export function Hero() {
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-        className="relative w-full max-w-310 md:h-[calc(100svh-160px)] md:min-h-144 rounded-[32px] md:rounded-[40px] overflow-hidden"
+        className="relative w-full max-w-310 flex flex-col md:block h-[calc(100svh-5.25rem)] md:h-[calc(100svh-160px)] md:min-h-144 rounded-[24px] md:rounded-[40px] overflow-hidden"
         style={{
           background: "rgba(255, 253, 250, 0.72)",
           backdropFilter: "blur(32px) saturate(180%)",
@@ -58,22 +58,24 @@ export function Hero() {
           <div className="absolute inset-0 bg-linear-to-r from-white via-white/40 to-transparent w-[40%]" />
         </div>
 
-        {/* FOTO — mobile: franja superior */}
-        <div className="relative md:hidden w-full h-72 overflow-hidden">
+        {/* FOTO — mobile: ocupa 52% de la tarjeta, se adapta a cualquier pantalla */}
+        <div className="relative md:hidden w-full flex-none overflow-hidden" style={{ height: "52%" }}>
           <img
             src={`${import.meta.env.BASE_URL}images/genesi.png`}
             alt={name}
             onLoad={() => setImgLoaded(true)}
             className={`w-full h-full object-cover object-[center_10%] transition-opacity duration-1000 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
           />
-          {/* Fade hacia abajo */}
-          <div className="absolute inset-x-0 bottom-0 h-20"
-            style={{ background: "linear-gradient(to bottom, transparent, rgba(255,255,255,0.9))" }} />
+          {/* Fade triple hacia abajo */}
+          <div
+            className="absolute inset-x-0 bottom-0"
+            style={{ height: "35%", background: "linear-gradient(to bottom, transparent 0%, rgba(255,253,250,0.6) 70%, rgba(255,253,250,1) 100%)" }}
+          />
         </div>
 
         {/* CONTENIDO */}
         <motion.div
-          className="relative z-10 flex flex-col justify-center md:h-full w-full md:w-[48%] px-7 pb-8 pt-4 md:p-20"
+          className="relative z-10 flex flex-col justify-between md:justify-center flex-1 md:h-full w-full md:w-[48%] pt-3 pb-4 px-5 md:pt-20 md:pb-20 md:px-20"
           initial="hidden"
           animate="show"
           variants={{
@@ -81,10 +83,10 @@ export function Hero() {
             show: { transition: { staggerChildren: 0.1, delayChildren: 0.3 } }
           }}
         >
-          {/* Pill de roles */}
+          {/* Pill de roles — mobile encima del nombre, desktop en su lugar original */}
           <motion.div variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}>
             <span
-              className="inline-block px-4 py-1.5 rounded-full border mb-4 md:mb-8"
+              className="inline-block px-3 py-1 md:px-4 md:py-1.5 rounded-full border mb-0 md:mb-8"
               style={{
                 backgroundColor: "rgba(255,250,242,0.6)",
                 borderColor: "rgba(196,162,122,0.3)",
@@ -102,7 +104,7 @@ export function Hero() {
 
           {/* Nombre */}
           <motion.h1
-            className="text-[3.2rem] md:text-[6.8rem] leading-[0.85] tracking-tighter mb-3 md:mb-0"
+            className="text-[2.6rem] md:text-[6.8rem] leading-[0.85] tracking-tighter mb-0"
             variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
             style={{ fontFamily: "'Cormorant Garamond', serif", color: "#2E1608", fontWeight: 700 }}
           >
@@ -111,26 +113,26 @@ export function Hero() {
             ))}
           </motion.h1>
 
-          {/* Línea decorativa */}
+          {/* Línea decorativa — solo desktop */}
           <motion.div
-            className="h-1 w-16 md:w-20 rounded-full mb-3 md:mb-4"
+            className="hidden md:block h-1 w-20 rounded-full md:mb-4"
             style={{ background: "linear-gradient(to right, #C3A27A, rgba(195,162,122,0.1))" }}
             variants={{ hidden: { scaleX: 0 }, show: { scaleX: 1 } }}
           />
 
           {/* Descripción */}
           <motion.div
-            className="space-y-1 mb-5 md:mb-6"
+            className="mb-0 md:mb-6"
             variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#5A3B22", lineHeight: 1.7 }}
+            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#5A3B22", lineHeight: 1.55 }}
           >
             <p className="text-sm md:text-xl">{bio}</p>
-            <p className="hidden md:block text-base opacity-80 font-light max-w-sm italic">{tagline}</p>
+            <p className="hidden md:block text-base opacity-80 font-light max-w-sm italic mt-1">{tagline}</p>
           </motion.div>
 
           {/* Botones */}
           <motion.div
-            className="flex gap-2 md:gap-3 flex-wrap mb-5 md:mb-6"
+            className="flex gap-1.5 md:gap-3 flex-wrap mb-0 md:mb-6"
             variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}
           >
             <button
@@ -150,11 +152,11 @@ export function Hero() {
           </motion.div>
 
           {/* Divisor */}
-          <div className="w-full mb-4 md:mb-5" style={{ borderTop: "1px solid rgba(195, 162, 122, 0.4)" }} />
+          <div className="w-full mb-0 md:mb-5" style={{ borderTop: "1px solid rgba(195, 162, 122, 0.4)" }} />
 
           {/* Redes */}
           <motion.div
-            className="flex items-center gap-2 md:gap-3"
+            className="flex items-center gap-1.5 md:gap-3"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9 }}
@@ -169,11 +171,11 @@ export function Hero() {
               { href: "https://facebook.com/genesisnieto", title: "Facebook", path: "M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" },
             ].map((s) => (
               <a key={s.title} href={s.href} target="_blank" rel="noopener noreferrer"
-                className="w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+                className="w-7 h-7 md:w-9 md:h-9 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
                 style={{ background: "rgba(255,250,242,0.8)", border: "1px solid rgba(195,162,122,0.3)", color: "#7A5840" }}
                 title={s.title}
               >
-                <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d={s.path} /></svg>
+                <svg width="12" height="12" className="md:w-[14px] md:h-[14px]" fill="currentColor" viewBox="0 0 24 24"><path d={s.path} /></svg>
               </a>
             ))}
           </motion.div>

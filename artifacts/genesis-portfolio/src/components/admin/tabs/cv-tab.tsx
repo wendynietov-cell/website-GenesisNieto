@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { X, Plus, Download, Camera, User } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { exportElementAsPdf } from "@/components/admin/utils/exportPdf";
 
 // Types
 export interface CvExperience { empresa: string; rol: string; periodo: string; descripcion: string; }
@@ -285,23 +286,11 @@ export default function CvTab() {
   const updateEdu = (i: number, k: keyof CvEducacion, v: string) => setCv(p => ({ ...p, educacion: p.educacion.map((e, idx) => idx === i ? { ...e, [k]: v } : e) }));
   const addEdu = () => setCv(p => ({ ...p, educacion: [...p.educacion, { institucion: "", titulo: "", anio: "" }] }));
   const removeEdu = (i: number) => setCv(p => ({ ...p, educacion: p.educacion.filter((_, idx) => idx !== i) }));
-  const handlePrint = () => {
-    const el = document.getElementById("cv-preview-print");
-    if (!el) return;
-    const win = window.open("", "_blank");
-    if (!win) return;
-    win.document.write(
-      `<!DOCTYPE html><html><head><meta charset="utf-8">` +
-      `<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">` +
-      `<style>*{margin:0;padding:0;box-sizing:border-box;}body{width:595px;min-height:842px;background:white;}@page{size:A4 portrait;margin:0mm;}</style>` +
-      `</head><body>${el.outerHTML}</body></html>`
-    );  
-    win.document.close();
-    win.onload = () => {
-      (win.document.fonts?.ready ?? Promise.resolve()).then(() => {
-        setTimeout(() => { win.print(); win.close(); }, 300);
-      });
-    };
+  const [exporting, setExporting] = useState(false);
+  const handlePrint = async () => {
+    setExporting(true);
+    await exportElementAsPdf("cv-preview-print", `CV_${cv.nombre || "genesis"}.pdf`);
+    setExporting(false);
   };
   const tags = cv.habilidades.split(",").map(t => t.trim()).filter(Boolean);
 
@@ -316,7 +305,7 @@ export default function CvTab() {
 
       <div className="cv-layout">
         <div className="cv-form">
-          <button onClick={handlePrint} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold mb-5 transition-all hover:opacity-90 active:scale-[0.98]" style={{ background: colors.dark, color: colors.sidebarText }}><Download size={15} /> Descargar PDF (Imprimir)</button>
+          <button onClick={handlePrint} disabled={exporting} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold mb-5 transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60" style={{ background: colors.dark, color: colors.sidebarText }}>{exporting ? <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Generando...</> : <><Download size={15} />Descargar PDF</>}</button>
           <EditCard title="Foto de perfil" description="Aparece en la esquina superior del CV junto a tu nombre"><PhotoUploader value={cv.foto} onChange={v => u("foto", v)} /></EditCard>
           <EditCard title="Información personal">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -346,7 +335,7 @@ export default function CvTab() {
           </EditCard>
         </div>
         <div className="cv-panel">
-          <div className="flex items-center justify-between mb-3"><span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#C3A27A" }}>Vista previa A4</span><button onClick={handlePrint} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90" style={{ background: colors.dark, color: colors.sidebarText }}><Download size={12} /> PDF</button></div>
+          <div className="flex items-center justify-between mb-3"><span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#C3A27A" }}>Vista previa A4</span><button onClick={handlePrint} disabled={exporting} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90 disabled:opacity-60" style={{ background: colors.dark, color: colors.sidebarText }}>{exporting ? <span className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Download size={12} />}PDF</button></div>
           <div style={{ borderRadius: "16px", boxShadow: "0 4px 32px rgba(92,60,44,0.10)", border: border.light, overflow: "hidden" }}><ScaledPreview cv={cv} /></div>
         </div>
       </div>

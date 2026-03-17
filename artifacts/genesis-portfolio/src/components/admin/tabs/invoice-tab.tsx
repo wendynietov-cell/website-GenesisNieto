@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { Download, Plus, Trash2 } from "lucide-react";
+import { Download, Plus, Trash2, Clock, Eye, FileText } from "lucide-react";
 import { Field, Card, inputBase } from "@/components/admin/shared";
+import { exportElementAsPdf } from "@/components/admin/utils/exportPdf";
+import { useContent, Invoice } from "@/context/content-context";
 
 interface Servicio {
   id: number;
@@ -8,31 +10,8 @@ interface Servicio {
   valor: string;
 }
 
-interface InvoiceData {
-  numero: string;
-  fecha: string;
-  vencimiento: string;
-  // Prestador
-  prestadorNombre: string;
-  prestadorIdentificacion: string;
-  prestadorTelefono: string;
-  prestadorEmail: string;
-  // Datos bancarios
-  banco: string;
-  tipoCuenta: string;
-  numeroCuenta: string;
-  // Cliente
-  clienteNombre: string;
-  clienteIdentificacion: string;
-  clienteEmpresa: string;
-  clienteDireccion: string;
-  // Servicios
-  servicios: Servicio[];
-  // Extra
-  notas: string;
-}
 
-const defaultData: InvoiceData = {
+const defaultData: Omit<Invoice, 'id' | 'createdAt'> = {
   numero: "CC-001",
   fecha: new Date().toLocaleDateString("es-CO"),
   vencimiento: "",
@@ -61,7 +40,7 @@ function calcTotal(servicios: Servicio[]): string {
 }
 
 /* ── Vista previa imprimible ── */
-function InvoicePreview({ data }: { data: InvoiceData }) {
+function InvoicePreview({ data }: { data: Omit<Invoice, "id" | "createdAt"> }) {
   return (
     <div
       id="invoice-print"
@@ -193,8 +172,11 @@ function InvoicePreview({ data }: { data: InvoiceData }) {
 }
 
 export default function InvoiceTab() {
-  const [data, setData] = useState<InvoiceData>(defaultData);
-  const u = <K extends keyof InvoiceData>(key: K, val: InvoiceData[K]) =>
+  const { content, updateContent } = useContent();
+  const [data, setData] = useState<Omit<Invoice, 'id' | 'createdAt'>>(defaultData);
+  const [showHistory, setShowHistory] = useState(false);
+  
+  const u = <K extends keyof Omit<Invoice, 'id' | 'createdAt'>>(key: K, val: Omit<Invoice, 'id' | 'createdAt'>[K]) =>
     setData((p) => ({ ...p, [key]: val }));
 
   const addServicio = () =>
@@ -206,36 +188,60 @@ export default function InvoiceTab() {
   const removeServicio = (id: number) =>
     u("servicios", data.servicios.filter((s) => s.id !== id));
 
-  const handlePrint = () => {
-    const el = document.getElementById("invoice-print");
-    if (!el) return;
-    const win = window.open("", "_blank");
-    if (!win) return;
-    win.document.write(
-      `<!DOCTYPE html><html><head><meta charset="utf-8">` +
-      `<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">` +
-      `<style>*{margin:0;padding:0;box-sizing:border-box;}body{width:595px;height:842px;overflow:hidden;background:white;}@page{size:A4 portrait;margin:0mm;}</style>` +
-      `</head><body>${el.outerHTML}</body></html>`
-    );
-    win.document.close();
-    win.onload = () => {
-      (win.document.fonts?.ready ?? Promise.resolve()).then(() => {
-        setTimeout(() => { win.print(); win.close(); }, 300);
-      });
+  const [exporting, setExporting] = useState(false);
+  const handlePrint = async () => {
+    setExporting(true);
+    await exportElementAsPdf("invoice-print", `CuentaCobro_${data.numero}_${data.clienteNombre || "cliente"}.pdf`);
+    setExporting(false);
+  };
+  
+  const saveInvoice = () => {
+    const newInvoice: Invoice = {
+      ...data,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString()
     };
+    
+    updateContent(prev => ({
+      ...prev,
+      invoices: {
+        items: [newInvoice, ...prev.invoices.items]
+      }
+    }));
+    
+    // Reset form
+    setData({
+      ...defaultData,
+      numero: (parseInt(data.numero.replace("CC-", "")) + 1).toString().padStart(3, "0").replace(/^/, "CC-")
+    });
+  };
+  
+  const loadInvoice = (invoice: Invoice) => {
+    const { id, createdAt, ...invoiceData } = invoice;
+    setData(invoiceData);
+    setShowHistory(false);
+  };
+  
+  const deleteInvoice = (id: string) => {
+    updateContent(prev => ({
+      ...prev,
+      invoices: {
+        items: prev.invoices.items.filter(i => i.id !== id)
+      }
+    }));
   };
 
   return (
     <>
-    <style>{`
-      @media print {
-        body * { visibility: hidden !important; }
-        #invoice-print, #invoice-print * { visibility: visible !important; }
-        #invoice-print { position: fixed; top: 0; left: 0; width: 100%; }
-        @page { size: A4; margin: 0; }
-      }
-    `}</style>
-    <div className="flex flex-col xl:flex-row gap-6">
+      <style>{`
+        @media print {
+          body * { visibility: hidden !important; }
+          #invoice-print, #invoice-print * { visibility: visible !important; }
+          #invoice-print { position: fixed; top: 0; left: 0; width: 100%; }
+          @page { size: A4; margin: 0; }
+        }
+      `}</style>
+      <div className="flex flex-col xl:flex-row gap-6">
       {/* ── FORMULARIO ── */}
       <div className="xl:w-[45%] space-y-0">
         <Card title="Datos del documento" cols2>
@@ -307,14 +313,28 @@ export default function InvoiceTab() {
           <Field label="" value={data.notas} onChange={(v) => u("notas", v)} multiline rows={3} placeholder="Observaciones, forma de pago acordada, etc." />
         </Card>
 
-        <button
-          onClick={handlePrint}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
-          style={{ background: "#2C1A0A", color: "#FAF8F5" }}
-        >
-          <Download size={15} />
-          Descargar cuenta de cobro en PDF
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={saveInvoice}
+            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
+            style={{ background: "#C3A27A", color: "#FAF8F5" }}
+          >
+            <Plus size={15} />
+            Guardar cuenta
+          </button>
+          <button
+            onClick={handlePrint}
+            disabled={exporting}
+            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
+            style={{ background: "#2C1A0A", color: "#FAF8F5" }}
+          >
+            {exporting ? (
+              <><span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Generando...</>
+            ) : (
+              <><Download size={15} /> Descargar PDF</>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* ── PREVIEW ── */}
@@ -326,7 +346,118 @@ export default function InvoiceTab() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+
+      {/* ── HISTORIAL DE CUENTAS DE COBRO ── */}
+      <section style={{ marginTop: "48px" }}>
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-bold text-[#2C1A0A] flex items-center gap-2">
+            <Clock size={20} />
+            Historial de Cuentas ({content.invoices.items.length})
+          </h3>
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+            style={{ background: showHistory ? "#C3A27A" : "#F5F0E8", color: showHistory ? "#FAF8F5" : "#2C1A0A" }}
+          >
+            {showHistory ? "Ocultar" : "Mostrar"} historial
+          </button>
+        </div>
+
+        {showHistory && (
+          <div className="space-y-4">
+            {content.invoices.items.length === 0 ? (
+              <div className="text-center py-12 rounded-2xl border border-dashed" style={{ borderColor: "#C3A27A", background: "#FAF8F5" }}>
+                <FileText size={48} style={{ color: "#C3A27A", margin: "0 auto 16px" }} />
+                <p className="text-sm font-medium" style={{ color: "#2C1A0A" }}>No hay cuentas guardadas</p>
+                <p className="text-xs mt-2" style={{ color: "#8A6B52" }}>Las cuentas que guardes aparecerán aquí</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {content.invoices.items.map((invoice) => (
+                  <div
+                    key={invoice.id}
+                    className="group bg-white rounded-2xl border border-[#E8DFD3] shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden"
+                  >
+                    {/* Header */}
+                    <div className="p-4 border-b border-[#E8DFD3]" style={{ background: "#FAF8F5" }}>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ background: "#C3A27A", color: "#FAF8F5" }}>
+                              #{invoice.numero}
+                            </span>
+                            <span className="text-xs" style={{ color: "#8A6B52" }}>
+                              {new Date(invoice.createdAt).toLocaleDateString("es-CO")}
+                            </span>
+                          </div>
+                          <h4 className="font-semibold text-sm" style={{ color: "#2C1A0A" }}>
+                            {invoice.clienteNombre || "Sin cliente"}
+                          </h4>
+                          <p className="text-xs mt-1" style={{ color: "#8A6B52" }}>
+                            {invoice.clienteEmpresa && `${invoice.clienteEmpresa}`}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => deleteInvoice(invoice.id)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-red-50"
+                          style={{ color: "#DC2626" }}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-4">
+                      <div className="space-y-2 text-xs" style={{ color: "#6B5D4F" }}>
+                        <div className="flex justify-between">
+                          <span>Total:</span>
+                          <span className="font-semibold">
+                            {invoice.servicios.reduce((total, s) => total + (parseFloat(s.valor) || 0), 0).toLocaleString("es-CO", {
+                              style: "currency",
+                              currency: "COP"
+                            })}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Servicios:</span>
+                          <span className="font-semibold">{invoice.servicios.filter(s => s.descripcion).length}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Vencimiento:</span>
+                          <span className="font-semibold">{invoice.vencimiento || "No definido"}</span>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex gap-2 mt-4">
+                        <button
+                          onClick={() => loadInvoice(invoice)}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all"
+                          style={{ background: "#2C1A0A", color: "#FAF8F5" }}
+                        >
+                          <Eye size={12} /> Cargar
+                        </button>
+                        <button
+                          onClick={() => {
+                            setData(invoice);
+                            handlePrint();
+                          }}
+                          className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all"
+                          style={{ background: "#C3A27A", color: "#FAF8F5" }}
+                        >
+                          <Download size={12} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </section>
     </>
   );
 }

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { exportElementAsPdf } from "@/components/admin/utils/exportPdf";
 import { Download, Plus, X, FileText, User, Briefcase, DollarSign, StickyNote, Sparkles, Clock, Eye, Trash2 } from "lucide-react";
 import { useContent, Proposal } from "@/context/content-context";
 
@@ -519,23 +520,11 @@ export default function ProposalTab() {
   const removeEntregable = (id: number) =>
     u("entregables", data.entregables.filter((e) => e.id !== id));
 
-  const handlePrint = () => {
-    const el = document.getElementById("proposal-print");
-    if (!el) return;
-    const win = window.open("", "_blank");
-    if (!win) return;
-    win.document.write(
-      `<!DOCTYPE html><html><head><meta charset="utf-8">` +
-      `<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">` +
-      `<style>*{margin:0;padding:0;box-sizing:border-box;}body{width:595px;min-height:842px;background:white;}@page{size:A4 portrait;margin:0mm;}</style>` +
-      `</head><body>${el.outerHTML}</body></html>`
-    );
-    win.document.close();
-    win.onload = () => {
-      (win.document.fonts?.ready ?? Promise.resolve()).then(() => {
-        setTimeout(() => { win.print(); win.close(); }, 300);
-      });
-    };
+  const [exporting, setExporting] = useState(false);
+  const handlePrint = async () => {
+    setExporting(true);
+    await exportElementAsPdf("proposal-print", `Propuesta_${data.numero}_${data.clienteNombre || "cliente"}.pdf`);
+    setExporting(false);
   };
 
   const saveProposal = () => {
@@ -716,11 +705,15 @@ export default function ProposalTab() {
             </button>
             <button
               onClick={handlePrint}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold uppercase tracking-wider transition-all hover:opacity-90 active:scale-[0.98]"
+              disabled={exporting}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold uppercase tracking-wider transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
               style={{ background: "#3D2518", color: "#FAF8F5", letterSpacing: "0.06em" }}
             >
-              <Download size={15} />
-              Descargar PDF
+              {exporting ? (
+                <><span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Generando...</>
+              ) : (
+                <><Download size={15} /> Descargar PDF</>
+              )}
             </button>
           </div>
         </div>
@@ -733,10 +726,11 @@ export default function ProposalTab() {
             </span>
             <button
               onClick={handlePrint}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+              disabled={exporting}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90 disabled:opacity-60"
               style={{ background: "#3D2518", color: "#FAF8F5" }}
             >
-              <Download size={12} /> PDF
+              {exporting ? <span className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <><Download size={12} /> PDF</>}
             </button>
           </div>
           <div
