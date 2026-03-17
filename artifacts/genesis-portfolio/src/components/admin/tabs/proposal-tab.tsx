@@ -531,7 +531,11 @@ export default function ProposalTab() {
       `</head><body>${el.outerHTML}</body></html>`
     );
     win.document.close();
-    setTimeout(() => { win.print(); win.close(); }, 900);
+    win.onload = () => {
+      (win.document.fonts?.ready ?? Promise.resolve()).then(() => {
+        setTimeout(() => { win.print(); win.close(); }, 300);
+      });
+    };
   };
 
   const saveProposal = () => {

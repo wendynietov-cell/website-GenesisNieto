@@ -214,11 +214,15 @@ export default function InvoiceTab() {
     win.document.write(
       `<!DOCTYPE html><html><head><meta charset="utf-8">` +
       `<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">` +
-      `<style>*{margin:0;padding:0;box-sizing:border-box;}body{width:595px;min-height:842px;background:white;}@page{size:A4 portrait;margin:0mm;}</style>` +
+      `<style>*{margin:0;padding:0;box-sizing:border-box;}body{width:595px;height:842px;overflow:hidden;background:white;}@page{size:A4 portrait;margin:0mm;}</style>` +
       `</head><body>${el.outerHTML}</body></html>`
     );
     win.document.close();
-    setTimeout(() => { win.print(); win.close(); }, 900);
+    win.onload = () => {
+      (win.document.fonts?.ready ?? Promise.resolve()).then(() => {
+        setTimeout(() => { win.print(); win.close(); }, 300);
+      });
+    };
   };
 
   return (
