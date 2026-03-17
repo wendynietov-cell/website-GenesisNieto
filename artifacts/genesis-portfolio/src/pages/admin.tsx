@@ -3,7 +3,7 @@ import { useContent, SiteContent, MethodStep, Testimonial, Favorite, GalleryVide
 import {
   Lock, Eye, EyeOff, Save, RotateCcw, ChevronRight, ExternalLink, Check, X,
   Home, Film, Package, Zap, MessageSquare, Star, Handshake, Mail, Tag, Layout,
-  FileText, Plus, Download, LogOut
+  FileText, Plus, Download, LogOut, Menu
 } from "lucide-react";
 
 const ADMIN_PASSWORD = "genesis2025";
@@ -215,10 +215,10 @@ function Field({
   );
 }
 
-function Card({ title, children }: { title?: string; children: React.ReactNode }) {
+function Card({ title, children, cols2 = false }: { title?: string; children: React.ReactNode; cols2?: boolean }) {
   return (
     <div
-      className="rounded-2xl p-6 mb-5 shadow-sm"
+      className="rounded-2xl p-5 md:p-7 mb-5 shadow-sm"
       style={{ background: "#FFFFFF", border: "1px solid rgba(200,168,137,0.25)" }}
     >
       {title && (
@@ -229,7 +229,9 @@ function Card({ title, children }: { title?: string; children: React.ReactNode }
           {title}
         </h3>
       )}
-      {children}
+      {cols2 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">{children}</div>
+      ) : children}
     </div>
   );
 }
@@ -243,26 +245,15 @@ function HeroTab() {
     updateContent((prev) => ({ ...prev, hero: { ...prev.hero, [key]: val } }));
   return (
     <div>
-      <Card title="Textos principales">
+      <Card title="Textos principales" cols2>
         <Field label="Tu nombre" value={content.hero.name} onChange={(v) => u("name", v)} />
-        <Field
-          label="Subtítulo / Rol"
-          value={content.hero.subtitle}
-          onChange={(v) => u("subtitle", v)}
-        />
-        <Field
-          label="Biografía"
-          value={content.hero.bio}
-          onChange={(v) => u("bio", v)}
-          multiline
-          placeholder="Cuéntale a las marcas quién eres..."
-        />
-        <Field
-          label="Frase de impacto (entre comillas)"
-          value={content.hero.tagline}
-          onChange={(v) => u("tagline", v)}
-          multiline
-        />
+        <Field label="Subtítulo / Rol" value={content.hero.subtitle} onChange={(v) => u("subtitle", v)} />
+        <div className="md:col-span-2">
+          <Field label="Biografía" value={content.hero.bio} onChange={(v) => u("bio", v)} multiline placeholder="Cuéntale a las marcas quién eres..." />
+        </div>
+        <div className="md:col-span-2">
+          <Field label="Frase de impacto (tagline)" value={content.hero.tagline} onChange={(v) => u("tagline", v)} multiline />
+        </div>
       </Card>
       <Card title="Botones">
         <Field
@@ -524,6 +515,21 @@ function FavoritesTab() {
       },
     }));
 
+  const handleImageUpload = async (idx: number, file: File) => {
+    // Crear una URL temporal para previsualización
+    const tempUrl = URL.createObjectURL(file);
+    updateItem(idx, "img", tempUrl);
+
+    // Aquí podrías implementar la subida a un servicio como Supabase Storage
+    // Por ahora, convertimos a base64 para almacenamiento local
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      updateItem(idx, "img", base64String);
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <div>
       <Card title="Encabezado de sección">
@@ -568,12 +574,49 @@ function FavoritesTab() {
               onChange={(v) => updateItem(i, "productName", v)}
               placeholder="ej: Proteína Whey Isolate..."
             />
-            <Field
-              label="URL de la imagen (pega un link de imagen)"
-              value={f.img}
-              onChange={(v) => updateItem(i, "img", v)}
-              placeholder="https://..."
-            />
+            <div className="mb-4">
+              <label
+                className="block text-xs font-semibold uppercase tracking-wider mb-2"
+                style={{ color: "#8A6B52" }}
+              >
+                Imagen del producto
+              </label>
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageUpload(i, file);
+                    }}
+                    className="flex-1 px-3 py-2.5 rounded-xl text-sm outline-none transition-all focus:ring-2 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold"
+                    style={{ 
+                      ...inputBase, 
+                      "--tw-ring-color": "#C8A889",
+                      "file:bg": "#5C3C2C",
+                      "file:text": "#FAF8F5"
+                    } as React.CSSProperties}
+                  />
+                  <button
+                    onClick={() => updateItem(i, "img", "")}
+                    className="px-3 py-2.5 rounded-xl text-xs font-medium transition-colors hover:bg-red-50"
+                    style={{ 
+                      color: "#B09070", 
+                      border: "1px solid rgba(200,168,137,0.25)" 
+                    }}
+                  >
+                    Limpiar
+                  </button>
+                </div>
+                <Field
+                  label="O URL de imagen (opcional)"
+                  value={f.img && !f.img.startsWith('data:') && !f.img.startsWith('blob:') ? f.img : ""}
+                  onChange={(v) => updateItem(i, "img", v)}
+                  placeholder="https://..."
+                />
+              </div>
+            </div>
           </Card>
         </div>
       ))}
@@ -1677,9 +1720,15 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   const [activeTab, setActiveTab] = useState<TabId>("hero");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const { resetContent, saveToSupabase, isSaving, lastSaved, isLoading } = useContent();
   const ActiveComponent = TAB_COMPONENTS[activeTab];
   const isCvTab = activeTab === "cv";
+
+  const goToTab = (id: TabId) => {
+    setActiveTab(id);
+    setMobileSidebarOpen(false);
+  };
 
   const currentTabMeta =
     ALL_TABS.find((t) => t.id === activeTab) ?? ALL_TABS[0];
@@ -1713,7 +1762,7 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
     const active = activeTab === tab.id;
     return (
       <button
-        onClick={() => setActiveTab(tab.id)}
+        onClick={() => goToTab(tab.id)}
         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-left transition-all duration-150"
         style={{
           background: active ? "rgba(92,60,44,0.08)" : "transparent",
@@ -1737,9 +1786,18 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
       className="min-h-screen flex"
       style={{ background: "#F7F5F2", fontFamily: "Inter, 'Helvetica Neue', Arial, sans-serif" }}
     >
+      {/* ── MOBILE SIDEBAR OVERLAY ── */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 md:hidden"
+          style={{ background: "rgba(44,26,10,0.45)", backdropFilter: "blur(2px)" }}
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
       {/* ── SIDEBAR ── */}
       <aside
-        className="shrink-0 flex flex-col sticky top-0 h-screen overflow-y-auto"
+        className={`shrink-0 flex flex-col h-screen overflow-y-auto fixed md:sticky top-0 z-50 md:z-auto transition-transform duration-300 ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
         style={{
           width: "220px",
           background: "#FFFFFF",
@@ -1826,29 +1884,38 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
       </aside>
 
       {/* ── MAIN CONTENT ── */}
-      <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-screen overflow-hidden md:ml-0">
         {/* Top header bar — always visible */}
         <header
-          className="sticky top-0 z-10 flex items-center justify-between px-8 py-4"
+          className="sticky top-0 z-10 flex items-center justify-between px-4 md:px-8 py-3 md:py-4"
           style={{
             background: "#FFFFFF",
             borderBottom: "1px solid rgba(200,168,137,0.2)",
             boxShadow: "0 1px 8px rgba(92,60,44,0.04)",
           }}
         >
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs" style={{ color: "#B09070" }}>
-              Admin
-            </span>
-            <ChevronRight size={13} style={{ color: "#C3A27A" }} />
-            <span
-              className="flex items-center gap-1.5 text-sm font-semibold"
-              style={{ color: "#5C3C2C" }}
+          {/* Hamburger (mobile only) + Breadcrumb */}
+          <div className="flex items-center gap-3">
+            <button
+              className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl transition-colors hover:bg-gray-50"
+              style={{ border: "1px solid rgba(200,168,137,0.3)", color: "#5C3C2C" }}
+              onClick={() => setMobileSidebarOpen(true)}
             >
-              <span style={{ color: "#C3A27A" }}>{currentTabMeta.icon}</span>
-              {currentTabMeta.label}
-            </span>
+              <Menu size={18} />
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-xs hidden sm:block" style={{ color: "#B09070" }}>
+                Admin
+              </span>
+              <ChevronRight size={13} className="hidden sm:block" style={{ color: "#C3A27A" }} />
+              <span
+                className="flex items-center gap-1.5 text-sm font-semibold"
+                style={{ color: "#5C3C2C" }}
+              >
+                <span style={{ color: "#C3A27A" }}>{currentTabMeta.icon}</span>
+                {currentTabMeta.label}
+              </span>
+            </div>
           </div>
 
           {/* Save / Reset — hidden for CV tab (it's a standalone tool) */}
@@ -1908,7 +1975,7 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
         </header>
 
         {/* Scrollable content area */}
-        <main className="flex-1 overflow-y-auto px-8 py-7">
+        <main className="flex-1 overflow-y-auto px-4 md:px-8 py-5 md:py-7">
           {/* Status notices — not shown in CV tab */}
           {!isCvTab && (
             <>
@@ -1956,10 +2023,7 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
             </>
           )}
 
-          {/* Constrain width for single-column tabs, full width for CV */}
-          <div style={{ maxWidth: isCvTab ? "100%" : "680px", margin: "0 auto" }}>
-            <ActiveComponent />
-          </div>
+          <ActiveComponent />
         </main>
       </div>
     </div>
