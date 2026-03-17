@@ -4,7 +4,7 @@ import { useContent } from "@/context/content-context";
 
 export function Hero() {
   const { content } = useContent();
-  const { name, subtitle } = content.hero;
+  const { name, subtitle, bio, tagline } = content.hero;
 
   const [imgLoaded, setImgLoaded] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -124,13 +124,8 @@ export function Hero() {
             variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}
             style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#5A3B22", lineHeight: 1.7 }}
           >
-            <p className="text-sm md:text-xl">
-              Ayudo a marcas a contar su historia a través de contenido
-              <span className="font-semibold" style={{ color: "#2E1608" }}> UGC estratégico</span> y estético.
-            </p>
-            <p className="hidden md:block text-base opacity-80 font-light max-w-sm italic">
-              Especializada en moda, bienestar y estilo de vida con un propósito 100% comercial.
-            </p>
+            <p className="text-sm md:text-xl">{bio}</p>
+            <p className="hidden md:block text-base opacity-80 font-light max-w-sm italic">{tagline}</p>
           </motion.div>
 
           {/* Botones */}
