@@ -48,7 +48,7 @@ export default function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const { resetContent, saveToSupabase, isSaving, lastSaved, isLoading } = useContent();
   const ActiveComponent = TAB_COMPONENTS[activeTab];
-  const isCvTab = activeTab === "cv";
+  const isToolTab = activeTab === "cv" || activeTab === "proposal" || activeTab === "invoice";
 
   const goToTab = (id: TabId) => {
     setActiveTab(id);
@@ -244,7 +244,7 @@ export default function AdminDashboard({ onLogout }: { onLogout: () => void }) {
           </div>
 
           {/* Save / Reset — hidden for CV tab (it's a standalone tool) */}
-          {!isCvTab && (
+          {!isToolTab && (
             <div className="flex items-center gap-3">
               <span className="text-xs hidden sm:block" style={{ color: "#B09070" }}>
                 {lastSaved
@@ -302,7 +302,7 @@ export default function AdminDashboard({ onLogout }: { onLogout: () => void }) {
         {/* Scrollable content area */}
         <main className="flex-1 overflow-y-auto px-4 md:px-8 py-5 md:py-7">
           {/* Status notices — not shown in CV tab */}
-          {!isCvTab && (
+          {!isToolTab && (
             <>
               {saveStatus === "error" && saveError && (
                 <div
