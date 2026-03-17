@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { X, Plus, Download, Camera, User } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 // Types
 export interface CvExperience { empresa: string; rol: string; periodo: string; descripcion: string; }
@@ -47,8 +48,8 @@ const globalStyles = `
   @media print {
     body * { visibility: hidden !important; }
     #cv-preview-print, #cv-preview-print * { visibility: visible !important; }
-    #cv-preview-print { position: fixed !important; top: 0 !important; left: 0 !important; width: 210mm !important; height: 297mm !important; transform: none !important; overflow: hidden !important; }
-    @page { size: A4 portrait; margin: 0mm; }
+    #cv-preview-print { position: fixed !important; top: 0 !important; left: 0 !important; width: 595px !important; height: 842px !important; transform: none !important; overflow: hidden !important; }
+    @page { size: A4 portrait; margin: 0; }
   }
 `;
 
@@ -79,14 +80,46 @@ const EditCard = ({ children, title, description, count }: { children: React.Rea
 
 const PhotoUploader = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [uploading, setUploading] = useState(false);
+  
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => onChange(reader.result as string);
-    reader.readAsDataURL(file);
+    
+    setUploading(true);
+    try {
+      // Subir a Supabase Storage
+      const fileExt = file.name.split(".").pop();
+      const fileName = `cv-photo_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `cv/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("favorites-images") // Reutilizamos bucket existente
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("favorites-images")
+        .getPublicUrl(filePath);
+
+      onChange(publicUrl);
+    } catch (error) {
+      console.error("Error subiendo foto:", error);
+      // Fallback a base64 si falla Supabase
+      const reader = new FileReader();
+      reader.onload = () => onChange(reader.result as string);
+      reader.readAsDataURL(file);
+    } finally {
+      setUploading(false);
+    }
   };
-  const handleRemove = (ev: React.MouseEvent) => { ev.stopPropagation(); onChange(""); if (inputRef.current) inputRef.current.value = ""; };
+  
+  const handleRemove = (ev: React.MouseEvent) => { 
+    ev.stopPropagation(); 
+    onChange(""); 
+    if (inputRef.current) inputRef.current.value = ""; 
+  };
   return (
     <div className="flex items-center gap-4">
       <div className="relative shrink-0" style={{ width: "80px", height: "80px" }}>
@@ -98,9 +131,18 @@ const PhotoUploader = ({ value, onChange }: { value: string; onChange: (v: strin
       <div className="flex-1">
         <input ref={inputRef} type="file" accept="image/*" onChange={handleFile} style={{ display: "none" }} id="cv-photo-input" />
         <label htmlFor="cv-photo-input" className="upload-label flex flex-col items-center justify-center gap-1.5 w-full py-4 rounded-xl cursor-pointer">
-          <Camera size={16} style={{ color: colors.primary }} />
-          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: colors.accent, letterSpacing: "0.06em" }}>{value ? "Cambiar foto" : "Subir foto"}</span>
-          <span className="text-xs" style={{ color: colors.textLight }}>JPG, PNG · Rec. cuadrada</span>
+          {uploading ? (
+            <>
+              <div className="w-4 h-4 border-2 border-[#C8A889] border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: colors.accent, letterSpacing: "0.06em" }}>Subiendo...</span>
+            </>
+          ) : (
+            <>
+              <Camera size={16} style={{ color: colors.primary }} />
+              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: colors.accent, letterSpacing: "0.06em" }}>{value ? "Cambiar foto" : "Subir foto"}</span>
+              <span className="text-xs" style={{ color: colors.textLight }}>JPG, PNG · Rec. cuadrada</span>
+            </>
+          )}
         </label>
       </div>
     </div>
@@ -167,7 +209,20 @@ export function CvPreview({ cv, printId }: { cv: CvData; printId?: string }) {
   ].filter(c => c.value);
 
   return (
-    <div id={printId} style={{ width: "595px", minHeight: "842px", background: colors.white, fontFamily: "Inter, 'Helvetica Neue', Arial, sans-serif", fontSize: "10px", color: "#2C1A0A", boxSizing: "border-box", display: "flex", lineHeight: 1.5 }}>
+    <div id={printId} style={{ 
+      width: "595px", 
+      height: "842px", 
+      background: colors.white, 
+      fontFamily: "Inter, 'Helvetica Neue', Arial, sans-serif", 
+      fontSize: "10px", 
+      color: "#2C1A0A", 
+      boxSizing: "border-box", 
+      display: "flex", 
+      lineHeight: 1.5,
+      overflow: "hidden",
+      margin: 0,
+      padding: 0
+    }}>
       {/* Left sidebar */}
       <div style={{ width: "210px", flexShrink: 0, background: colors.sidebarBg, padding: "36px 22px", display: "flex", flexDirection: "column", gap: "22px", boxSizing: "border-box" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
@@ -243,8 +298,8 @@ export default function CvTab() {
     <>
       <style>{globalStyles}</style>
 
-      {/* ── PRINT TARGET: fuera de cualquier contenedor con transform ── */}
-      <div style={{ position: "fixed", top: 0, left: "-9999px", width: "595px", pointerEvents: "none" }}>
+      {/* ── PRINT TARGET: oculto en pantalla, visible solo al imprimir ── */}
+      <div style={{ position: "fixed", top: 0, left: "-9999px", width: "595px", pointerEvents: "none", overflow: "hidden" }}>
         <CvPreview cv={cv} printId="cv-preview-print" />
       </div>
 
