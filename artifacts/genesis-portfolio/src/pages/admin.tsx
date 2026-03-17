@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useContent, SiteContent, MethodStep, Testimonial, Favorite, GalleryVideo, GalleryPhoto, Brand } from "@/context/content-context";
-import { Lock, Eye, Save, RotateCcw, ChevronRight, ExternalLink, Check, X } from "lucide-react";
+import { Lock, Eye, EyeOff, Save, RotateCcw, ChevronRight, ExternalLink, Check, X } from "lucide-react";
 
 const ADMIN_PASSWORD = "genesis2025";
 const AUTH_KEY = "genesis_admin_auth";
@@ -12,6 +12,7 @@ function isAuthenticated() {
 function LoginScreen({ onLogin }: { onLogin: () => void }) {
   const [pw, setPw] = useState("");
   const [error, setError] = useState(false);
+  const [showPw, setShowPw] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,15 +41,25 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
           <div className="rounded-3xl p-8 shadow-xl" style={{ background: "rgba(255,255,255,0.45)", backdropFilter: "blur(24px)", border: "1px solid rgba(200,168,137,0.35)" }}>
             <div className="mb-6">
               <label className="block text-sm font-medium mb-2" style={{ color: "#5C3C2C" }}>Contraseña</label>
-              <input
-                type="password"
-                value={pw}
-                onChange={(e) => setPw(e.target.value)}
-                placeholder="••••••••••"
-                className={`w-full px-4 py-3 rounded-xl text-sm outline-none transition-all duration-200 ${error ? "ring-2 ring-red-400" : "focus:ring-2"}`}
-                style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(200,168,137,0.4)", color: "#5C3C2C", "--tw-ring-color": "#C8A889" } as React.CSSProperties}
-                autoFocus
-              />
+              <div className="relative">
+                <input
+                  type={showPw ? "text" : "password"}
+                  value={pw}
+                  onChange={(e) => setPw(e.target.value)}
+                  placeholder="••••••••••"
+                  className={`w-full px-4 py-3 pr-11 rounded-xl text-sm outline-none transition-all duration-200 ${error ? "ring-2 ring-red-400" : "focus:ring-2"}`}
+                  style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(200,168,137,0.4)", color: "#5C3C2C", "--tw-ring-color": "#C8A889" } as React.CSSProperties}
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw(!showPw)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 transition-opacity hover:opacity-70"
+                  style={{ color: "#8A6B52" }}
+                >
+                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
               {error && <p className="text-red-500 text-xs mt-2">Contraseña incorrecta. Inténtalo de nuevo.</p>}
             </div>
             <button
