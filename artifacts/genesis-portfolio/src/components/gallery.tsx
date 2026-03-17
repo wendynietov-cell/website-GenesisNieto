@@ -119,7 +119,7 @@ export function Gallery() {
   }, [lightboxIndex, handleKey]);
 
   return (
-    <section id="galeria" className="py-32 bg-[#faf7f2]">
+    <section id="galeria" className="py-12 sm:py-32 bg-[#faf7f2]">
       <div className="max-w-310 mx-auto px-6">
 
         {/* ── Cabecera ── */}
@@ -128,9 +128,9 @@ export function Gallery() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-16"
+          className="mb-8 sm:mb-16"
         >
-          <div className="flex items-end justify-between flex-wrap gap-6">
+          <div className="flex items-end justify-between flex-wrap gap-4 sm:gap-6">
 
             {/* Título */}
             <div>
@@ -154,11 +154,11 @@ export function Gallery() {
             </div>
 
             {/* Controles */}
-            <div className="flex flex-col items-end gap-3">
+            <div className="flex flex-col items-start sm:items-end gap-2 sm:gap-3 w-full sm:w-auto">
 
               {/* Tabs video/fotos */}
               <div
-                className="inline-flex rounded-full p-1.5 gap-1"
+                className="inline-flex rounded-full p-1 sm:p-1.5 gap-1"
                 style={{ background: "rgba(20,12,6,0.08)", border: "1px solid rgba(195,162,122,0.2)" }}
               >
                 {(["videos", "photos"] as const).map((tab) => (
@@ -168,7 +168,7 @@ export function Gallery() {
                       setActiveTab(tab);
                       setFilter("Todos");
                     }}
-                    className="relative px-7 py-2.5 rounded-full text-[10px] uppercase tracking-widest font-bold transition-colors duration-300 cursor-pointer"
+                    className="relative px-5 sm:px-7 py-2 sm:py-2.5 rounded-full text-[10px] uppercase tracking-widest font-bold transition-colors duration-300 cursor-pointer"
                     style={{
                       fontFamily: "'Plus Jakarta Sans', sans-serif",
                       background: activeTab === tab ? "#140C06" : "transparent",
@@ -185,7 +185,7 @@ export function Gallery() {
               </div>
 
               {/* Filtros con contador */}
-              <div className="flex flex-wrap justify-end gap-2">
+              <div className="flex flex-nowrap sm:flex-wrap sm:justify-end gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide -mx-6 px-6 sm:mx-0 sm:px-0 pb-1 sm:pb-0 w-screen sm:w-auto">
                 {CATEGORIES.map((cat) => {
                   const count = counts[cat] ?? 0;
                   const active = filter === cat;
@@ -236,7 +236,7 @@ export function Gallery() {
           />
         </motion.div>
 
-        {/* ── Grid ── */}
+        {/* ── Grid / Carrusel ── */}
         <AnimatePresence mode="wait">
           {activeTab === "videos" ? (
             <motion.div
@@ -245,92 +245,107 @@ export function Gallery() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.45 }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
             >
               {filteredVideos.length === 0 ? (
                 <EmptyState onReset={() => setFilter("Todos")} />
               ) : (
-                filteredVideos.map((item: any, i: number) => (
-                  <motion.div
-                    key={item.src + i}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.07, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                    className="group relative cursor-pointer"
-                    style={{ aspectRatio: "9/16" }}
-                    onClick={() => setLightboxIndex(i)}
-                  >
-                    <div
-                      className="w-full h-full rounded-[28px] overflow-hidden p-2 shadow-xl"
-                      style={{ background: "#140C06", border: "1px solid rgba(195,162,122,0.15)" }}
-                    >
-                      <div className="w-full h-full relative rounded-[20px] overflow-hidden bg-stone-200">
-                        {item.poster ? (
-                          <img
-                            src={item.poster}
-                            alt={item.category}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                          />
-                        ) : (
-                          <video src={item.src} className="w-full h-full object-cover" preload="none" muted />
-                        )}
-
-                        {/* Overlay */}
+                <>
+                  {/* ── Mobile: carrusel horizontal ── */}
+                  <div className="flex sm:hidden gap-4 overflow-x-auto -mx-6 px-6 pb-4 snap-x snap-mandatory scrollbar-hide">
+                    {filteredVideos.map((item: any, i: number) => (
+                      <div
+                        key={item.src + i}
+                        className="shrink-0 w-[62vw] snap-center cursor-pointer"
+                        style={{ aspectRatio: "9/16" }}
+                        onClick={() => setLightboxIndex(i)}
+                      >
                         <div
-                          className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-400"
-                          style={{ background: "rgba(14,8,2,0.45)", backdropFilter: "blur(2px)" }}
+                          className="w-full h-full rounded-[24px] overflow-hidden p-1.5 shadow-xl"
+                          style={{ background: "#140C06", border: "1px solid rgba(195,162,122,0.15)" }}
                         >
-                          <div
-                            className="w-14 h-14 rounded-full flex items-center justify-center mb-3"
-                            style={{ background: "rgba(195,162,122,0.2)", border: "1px solid rgba(195,162,122,0.5)" }}
-                          >
-                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                              <path d="M6 3.5L14.5 9L6 14.5V3.5Z" fill="#F5EDE0" />
-                            </svg>
+                          <div className="w-full h-full relative rounded-[18px] overflow-hidden bg-stone-200">
+                            {item.poster ? (
+                              <img src={item.poster} alt={item.category} className="w-full h-full object-cover" />
+                            ) : (
+                              <video src={item.src} className="w-full h-full object-cover" preload="none" muted />
+                            )}
+                            {/* Play tap overlay */}
+                            <div className="absolute inset-0 flex items-center justify-center"
+                              style={{ background: "rgba(14,8,2,0.2)" }}>
+                              <div className="w-12 h-12 rounded-full flex items-center justify-center"
+                                style={{ background: "rgba(195,162,122,0.25)", border: "1px solid rgba(195,162,122,0.5)" }}>
+                                <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+                                  <path d="M6 3.5L14.5 9L6 14.5V3.5Z" fill="#F5EDE0" />
+                                </svg>
+                              </div>
+                            </div>
+                            <div className="absolute bottom-3 left-3">
+                              <span className="text-[9px] uppercase tracking-widest px-2.5 py-1 rounded-md"
+                                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", background: "rgba(14,8,2,0.55)", backdropFilter: "blur(8px)", color: "rgba(245,237,224,0.8)" }}>
+                                {item.category || "UGC"}
+                              </span>
+                            </div>
                           </div>
-                          <span
-                            className="text-[9px] uppercase tracking-widest"
-                            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "rgba(245,237,224,0.7)" }}
-                          >
-                            Ver video
-                          </span>
                         </div>
-
-                        {/* Badge categoría — abajo izquierda */}
-                        <div className="absolute bottom-3 left-3">
-                          <span
-                            className="text-[9px] uppercase tracking-widest px-2.5 py-1 rounded-md"
-                            style={{
-                              fontFamily: "'Plus Jakarta Sans', sans-serif",
-                              background: "rgba(14,8,2,0.55)",
-                              backdropFilter: "blur(8px)",
-                              color: "rgba(245,237,224,0.8)",
-                            }}
-                          >
-                            {item.category || "UGC"}
-                          </span>
-                        </div>
-
-                        {/* Duración — arriba derecha */}
-                        {item.duration && (
-                          <div className="absolute top-3 right-3">
-                            <span
-                              className="text-[9px] tabular-nums px-2 py-1 rounded-md"
-                              style={{
-                                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                                background: "rgba(14,8,2,0.55)",
-                                backdropFilter: "blur(8px)",
-                                color: "rgba(245,237,224,0.7)",
-                              }}
-                            >
-                              {item.duration}
-                            </span>
-                          </div>
-                        )}
                       </div>
-                    </div>
-                  </motion.div>
-                ))
+                    ))}
+                  </div>
+
+                  {/* ── Desktop: grid (sin cambios) ── */}
+                  <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {filteredVideos.map((item: any, i: number) => (
+                      <motion.div
+                        key={item.src + i}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.07, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                        className="group relative cursor-pointer"
+                        style={{ aspectRatio: "9/16" }}
+                        onClick={() => setLightboxIndex(i)}
+                      >
+                        <div
+                          className="w-full h-full rounded-[28px] overflow-hidden p-2 shadow-xl"
+                          style={{ background: "#140C06", border: "1px solid rgba(195,162,122,0.15)" }}
+                        >
+                          <div className="w-full h-full relative rounded-[20px] overflow-hidden bg-stone-200">
+                            {item.poster ? (
+                              <img src={item.poster} alt={item.category} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                            ) : (
+                              <video src={item.src} className="w-full h-full object-cover" preload="none" muted />
+                            )}
+                            <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-400"
+                              style={{ background: "rgba(14,8,2,0.45)", backdropFilter: "blur(2px)" }}>
+                              <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3"
+                                style={{ background: "rgba(195,162,122,0.2)", border: "1px solid rgba(195,162,122,0.5)" }}>
+                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                                  <path d="M6 3.5L14.5 9L6 14.5V3.5Z" fill="#F5EDE0" />
+                                </svg>
+                              </div>
+                              <span className="text-[9px] uppercase tracking-widest"
+                                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "rgba(245,237,224,0.7)" }}>
+                                Ver video
+                              </span>
+                            </div>
+                            <div className="absolute bottom-3 left-3">
+                              <span className="text-[9px] uppercase tracking-widest px-2.5 py-1 rounded-md"
+                                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", background: "rgba(14,8,2,0.55)", backdropFilter: "blur(8px)", color: "rgba(245,237,224,0.8)" }}>
+                                {item.category || "UGC"}
+                              </span>
+                            </div>
+                            {item.duration && (
+                              <div className="absolute top-3 right-3">
+                                <span className="text-[9px] tabular-nums px-2 py-1 rounded-md"
+                                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", background: "rgba(14,8,2,0.55)", backdropFilter: "blur(8px)", color: "rgba(245,237,224,0.7)" }}>
+                                  {item.duration}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </>
               )}
             </motion.div>
           ) : (
@@ -340,44 +355,80 @@ export function Gallery() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.45 }}
-              className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6"
             >
               {filteredPhotos.length === 0 ? (
                 <EmptyState onReset={() => setFilter("Todos")} />
               ) : (
-                filteredPhotos.map((item: any, i: number) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.07, duration: 0.6 }}
-                    className="break-inside-avoid p-2 rounded-[28px] shadow-lg group cursor-pointer"
-                    style={{ background: "white", border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
-                    onClick={() => setLightboxIndex(i)}
-                  >
-                    <div className="relative rounded-[20px] overflow-hidden">
-                      <img
-                        src={item.src}
-                        alt={`Portafolio ${i + 1}`}
-                        className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                      {/* Overlay */}
+                <>
+                  {/* ── Mobile: carrusel horizontal ── */}
+                  <div className="flex sm:hidden gap-4 overflow-x-auto -mx-6 px-6 pb-4 snap-x snap-mandatory scrollbar-hide">
+                    {filteredPhotos.map((item: any, i: number) => (
                       <div
-                        className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-400"
-                        style={{ background: "rgba(14,8,2,0.35)", backdropFilter: "blur(2px)" }}
+                        key={i}
+                        className="shrink-0 w-[72vw] snap-center cursor-pointer"
+                        onClick={() => setLightboxIndex(i)}
                       >
                         <div
-                          className="w-12 h-12 rounded-full flex items-center justify-center"
-                          style={{ background: "rgba(195,162,122,0.2)", border: "1px solid rgba(195,162,122,0.5)" }}
+                          className="p-1.5 rounded-[24px] shadow-lg"
+                          style={{ background: "white", border: "1px solid rgba(0,0,0,0.06)" }}
                         >
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <path d="M8 3v10M3 8h10" stroke="#F5EDE0" strokeWidth="1.5" strokeLinecap="round" />
-                          </svg>
+                          <div className="relative rounded-[18px] overflow-hidden">
+                            <img
+                              src={item.src}
+                              alt={`Portafolio ${i + 1}`}
+                              className="w-full h-auto object-cover"
+                            />
+                            <div
+                              className="absolute inset-0 flex items-center justify-center"
+                              style={{ background: "rgba(14,8,2,0.15)" }}
+                            >
+                              <div className="w-10 h-10 rounded-full flex items-center justify-center"
+                                style={{ background: "rgba(195,162,122,0.25)", border: "1px solid rgba(195,162,122,0.5)" }}>
+                                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                                  <path d="M8 3v10M3 8h10" stroke="#F5EDE0" strokeWidth="1.5" strokeLinecap="round" />
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))
+                    ))}
+                  </div>
+
+                  {/* ── Desktop: masonry (sin cambios) ── */}
+                  <div className="hidden sm:block columns-2 lg:columns-3 gap-6 space-y-6">
+                    {filteredPhotos.map((item: any, i: number) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.07, duration: 0.6 }}
+                        className="break-inside-avoid p-2 rounded-[28px] shadow-lg group cursor-pointer"
+                        style={{ background: "white", border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
+                        onClick={() => setLightboxIndex(i)}
+                      >
+                        <div className="relative rounded-[20px] overflow-hidden">
+                          <img
+                            src={item.src}
+                            alt={`Portafolio ${i + 1}`}
+                            className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
+                          <div
+                            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-400"
+                            style={{ background: "rgba(14,8,2,0.35)", backdropFilter: "blur(2px)" }}
+                          >
+                            <div className="w-12 h-12 rounded-full flex items-center justify-center"
+                              style={{ background: "rgba(195,162,122,0.2)", border: "1px solid rgba(195,162,122,0.5)" }}>
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M8 3v10M3 8h10" stroke="#F5EDE0" strokeWidth="1.5" strokeLinecap="round" />
+                              </svg>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </>
               )}
             </motion.div>
           )}

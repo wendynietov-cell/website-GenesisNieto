@@ -47,7 +47,7 @@ export function Favorites() {
   return (
     <section
       id="favoritos"
-      className="py-32 overflow-hidden texture-paper relative"
+      className="py-12 md:py-32 overflow-hidden texture-paper relative"
       style={{ backgroundColor: "#faf7f2" }}
     >
       {/* Top + bottom golden lines */}
@@ -68,7 +68,7 @@ export function Favorites() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20"
+          className="flex flex-col md:flex-row md:items-end justify-between gap-5 md:gap-8 mb-10 md:mb-20"
         >
           <div className="md:max-w-xs">
             <motion.span
@@ -92,7 +92,7 @@ export function Favorites() {
             </h2>
           </div>
 
-          <div className="md:max-w-md">
+          <div className="hidden md:block md:max-w-md">
             <div
               className="h-px w-full mb-6"
               style={{ background: "linear-gradient(to right, #C3A27A, transparent)", opacity: 0.4 }}
@@ -278,7 +278,7 @@ export function Favorites() {
         </div>
 
         {/* ── Dot indicators ── */}
-        <div className="flex items-center justify-center gap-2 mt-10">
+        <div className="flex items-center justify-center gap-2 mt-6 md:mt-10">
           {items.map((_, i) => (
             <button
               key={i}

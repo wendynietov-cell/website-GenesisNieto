@@ -9,7 +9,7 @@ export function Testimonials() {
   return (
     <section
       id="testimonios"
-      className="py-32 relative overflow-hidden"
+      className="py-12 md:py-32 relative overflow-hidden"
       style={{ background: "linear-gradient(to bottom, #140C06, #1C1008)" }}
     >
       <div className="absolute top-0 left-0 w-full h-px" style={{ background: "linear-gradient(to right, transparent, rgba(195,162,122,0.3), transparent)" }} />
@@ -21,7 +21,7 @@ export function Testimonials() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-8 md:mb-16"
         >
           <span className="inline-block text-[10px] uppercase tracking-[0.25em] font-semibold mb-6" style={{ color: "#C3A27A" }}>
             Testimonios
@@ -37,7 +37,32 @@ export function Testimonials() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* ── Mobile: carrusel ── */}
+        <div className="flex md:hidden gap-4 overflow-x-auto -mx-6 px-6 pb-4 snap-x snap-mandatory scrollbar-hide">
+          {items.map((t, i) => (
+            <div key={i} className="shrink-0 w-[80vw] snap-center">
+              <GlassCard dark className="h-full flex flex-col relative pt-10 pb-7 px-6 rounded-3xl">
+                <span
+                  className="absolute top-2 left-5 text-8xl leading-none select-none pointer-events-none"
+                  style={{ color: "rgba(195,162,122,0.12)", fontFamily: "'Cormorant Garamond', serif" }}
+                >
+                  "
+                </span>
+                <p className="text-lg italic leading-relaxed grow relative z-10"
+                  style={{ fontFamily: "'Cormorant Garamond', serif", color: "rgba(245,237,224,0.85)" }}>
+                  {t.quote || "Este espacio está reservado para tu próximo testimonio de marca."}
+                </p>
+                <div className="mt-5 pt-4 relative z-10 flex flex-col" style={{ borderTop: "1px solid rgba(195,162,122,0.2)" }}>
+                  <span className="font-semibold text-sm" style={{ color: "#F5EDE0" }}>{t.brand || "Marca"}</span>
+                  <span className="text-xs mt-0.5" style={{ color: "rgba(195,162,122,0.7)" }}>{t.author || "Rol"}</span>
+                </div>
+              </GlassCard>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Desktop: grid ── */}
+        <div className="hidden md:grid md:grid-cols-3 gap-8">
           {items.map((t, i) => (
             <motion.div
               key={i}
@@ -53,10 +78,8 @@ export function Testimonials() {
                 >
                   "
                 </span>
-                <p
-                  className="text-xl italic leading-relaxed grow relative z-10"
-                  style={{ fontFamily: "'Cormorant Garamond', serif", color: "rgba(245,237,224,0.85)" }}
-                >
+                <p className="text-xl italic leading-relaxed grow relative z-10"
+                  style={{ fontFamily: "'Cormorant Garamond', serif", color: "rgba(245,237,224,0.85)" }}>
                   {t.quote || "Este espacio está reservado para tu próximo testimonio de marca."}
                 </p>
                 <div className="mt-8 pt-6 relative z-10 flex flex-col" style={{ borderTop: "1px solid rgba(195,162,122,0.2)" }}>

@@ -27,7 +27,7 @@ export function Collabs() {
   return (
     <section
       id="colaboraciones"
-      className="py-32 relative overflow-hidden"
+      className="py-12 md:py-32 relative overflow-hidden"
       style={{ backgroundColor: "#faf7f2" }}
     >
       {/* Líneas borde */}
@@ -45,7 +45,7 @@ export function Collabs() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col md:flex-row md:items-end justify-between gap-10 mb-20"
+          className="flex flex-col md:flex-row md:items-end justify-between gap-5 md:gap-10 mb-8 md:mb-20"
         >
           {/* Izquierda — título */}
           <div className="md:max-w-sm">
@@ -82,7 +82,7 @@ export function Collabs() {
           </div>
 
           {/* Derecha — descripción */}
-          <div className="md:max-w-md">
+          <div className="hidden md:block md:max-w-md">
             <div
               className="h-px w-full mb-6"
               style={{ background: "linear-gradient(to right, #C3A27A, transparent)", opacity: 0.4 }}
@@ -99,8 +99,25 @@ export function Collabs() {
           </div>
         </motion.div>
 
-        {/* ── Cards ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+        {/* ── Mobile: carrusel ── */}
+        <div className="flex md:hidden gap-4 overflow-x-auto -mx-6 px-6 pb-4 snap-x snap-mandatory scrollbar-hide mb-8">
+          {cards.map(({ title, text, Icon, num }, i) => (
+            <div key={i} className="shrink-0 w-[78vw] snap-center">
+              <GlassCard className="h-full flex flex-col group relative overflow-hidden" style={{ padding: "1.25rem", border: "1px solid rgba(195,162,122,0.3)" }}>
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div style={{ color: "#C3A27A" }}><Icon size={18} /></div>
+                  <span className="text-[10px] uppercase tracking-[0.2em] font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "rgba(195,162,122,0.5)" }}>{num}</span>
+                </div>
+                <div className="h-px w-8 mb-4" style={{ background: "linear-gradient(to right, #C3A27A, rgba(195,162,122,0.1))" }} />
+                <h4 className="text-xl mb-2 leading-tight" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#2E1608", fontWeight: 600 }}>{title}</h4>
+                <p className="text-sm leading-relaxed font-light" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#5A3B22", opacity: 0.85 }}>{text}</p>
+              </GlassCard>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Desktop: grid ── */}
+        <div className="hidden md:grid md:grid-cols-3 gap-6 mb-16">
           {cards.map(({ title, text, Icon, num }, i) => (
             <motion.div
               key={i}

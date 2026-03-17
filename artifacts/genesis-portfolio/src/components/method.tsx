@@ -18,7 +18,7 @@ export function Method() {
     <section
       id="metodo"
       ref={sectionRef}
-      className="relative py-40 overflow-hidden"
+      className="relative py-14 md:py-40 overflow-hidden"
       style={{ backgroundColor: "#faf7f2" }}
     >
       {/* ── Ruido y Textura Editorial ── */}
@@ -36,7 +36,7 @@ export function Method() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center mb-32"
+          className="text-center mb-10 md:mb-32"
         >
           <span 
             className="inline-block text-[10px] uppercase font-bold tracking-[0.4em] mb-6 text-[#C3A27A]"
@@ -63,7 +63,7 @@ export function Method() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: i * 0.1 }}
-              className="relative group p-12 bg-[#140C06] flex flex-col min-h-100 transition-colors duration-700 hover:bg-[#1a110a]"
+              className="relative group p-6 md:p-12 bg-[#140C06] flex flex-col min-h-0 md:min-h-100 transition-colors duration-700 hover:bg-[#1a110a]"
             >
               {/* Número de fondo (Outline) */}
               <div
@@ -82,7 +82,7 @@ export function Method() {
               {/* Contenido Superior */}
               <div className="relative z-10 grow">
                 <div 
-                  className="w-12 h-12 rounded-full border border-[#C3A27A]/30 flex items-center justify-center mb-10 group-hover:bg-[#C3A27A] group-hover:text-[#2E1608] transition-all duration-500"
+                  className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-[#C3A27A]/30 flex items-center justify-center mb-5 md:mb-10 group-hover:bg-[#C3A27A] group-hover:text-[#2E1608] transition-all duration-500"
                   style={{ color: "#C3A27A", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic" }}
                 >
                   {step.num}
@@ -119,7 +119,7 @@ export function Method() {
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          className="mt-24 text-center space-y-4"
+          className="mt-10 md:mt-24 text-center space-y-4"
         >
           <div className="flex items-center justify-center gap-4">
              <div className="h-px w-12 bg-[#C3A27A]/30" />
