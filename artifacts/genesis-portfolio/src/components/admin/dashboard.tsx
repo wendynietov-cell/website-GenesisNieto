@@ -17,6 +17,8 @@ import CollabsTab from "@/components/admin/tabs/collabs-tab";
 import ContactTab from "@/components/admin/tabs/contact-tab";
 import BrandsTab from "@/components/admin/tabs/brands-tab";
 import CvTab from "@/components/admin/tabs/cv-tab";
+import ProposalTab from "@/components/admin/tabs/proposal-tab";
+import InvoiceTab from "@/components/admin/tabs/invoice-tab";
 
 /* ─────────────────────────────────────────────
    TAB COMPONENT MAP
@@ -32,6 +34,8 @@ const TAB_COMPONENTS: Record<TabId, React.FC> = {
   contact: ContactTab,
   brands: BrandsTab,
   cv: CvTab,
+  proposal: ProposalTab,
+  invoice: InvoiceTab,
 };
 
 /* ─────────────────────────────────────────────

@@ -1,6 +1,7 @@
 import React from "react";
 import {
   Home, Film, Package, Zap, MessageSquare, Star, Handshake, Mail, Tag, FileText,
+  ClipboardList, Receipt,
 } from "lucide-react";
 
 export const ADMIN_PASSWORD = "genesis2025";
@@ -23,7 +24,9 @@ export type TabId =
   | "collabs"
   | "contact"
   | "brands"
-  | "cv";
+  | "cv"
+  | "proposal"
+  | "invoice";
 
 export interface SidebarTab {
   id: TabId;
@@ -45,6 +48,8 @@ export const CONTENT_TABS: SidebarTab[] = [
 
 export const TOOL_TABS: SidebarTab[] = [
   { id: "cv", label: "Hoja de Vida", icon: <FileText size={16} /> },
+  { id: "proposal", label: "Propuestas", icon: <ClipboardList size={16} /> },
+  { id: "invoice", label: "Cuentas de Cobro", icon: <Receipt size={16} /> },
 ];
 
 export const ALL_TABS: SidebarTab[] = [...CONTENT_TABS, ...TOOL_TABS];

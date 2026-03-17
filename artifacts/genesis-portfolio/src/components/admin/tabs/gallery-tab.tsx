@@ -1,9 +1,105 @@
 import { useContent, GalleryVideo } from "@/context/content-context";
+import { supabase } from "@/lib/supabase";
 import { X, Plus } from "lucide-react";
-import { Field, Card } from "@/components/admin/shared";
+import { Field, Card, inputBase } from "@/components/admin/shared";
+import { useState } from "react";
 
 export default function GalleryTab() {
   const { content, updateContent } = useContent();
+  const [uploadingVideo, setUploadingVideo] = useState<{ [key: number]: boolean }>({});
+  const [uploadingPhoto, setUploadingPhoto] = useState<{ [key: number]: boolean }>({});
+
+  const handleVideoUpload = async (idx: number, file: File) => {
+    setUploadingVideo(prev => ({ ...prev, [idx]: true }));
+    
+    try {
+      // Crear nombre de archivo único
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `gallery/videos/${fileName}`;
+
+      // Subir a Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('gallery-media')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error('Error subiendo video:', uploadError);
+        // Fallback a base64 si falla la subida
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64String = reader.result as string;
+          updateVideo(idx, "src", base64String);
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      // Obtener URL pública
+      const { data: { publicUrl } } = supabase.storage
+        .from('gallery-media')
+        .getPublicUrl(filePath);
+
+      updateVideo(idx, "src", publicUrl);
+    } catch (error) {
+      console.error('Error en la subida:', error);
+      // Fallback a base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        updateVideo(idx, "src", base64String);
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setUploadingVideo(prev => ({ ...prev, [idx]: false }));
+    }
+  };
+
+  const handlePhotoUpload = async (idx: number, file: File) => {
+    setUploadingPhoto(prev => ({ ...prev, [idx]: true }));
+    
+    try {
+      // Crear nombre de archivo único
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `gallery/photos/${fileName}`;
+
+      // Subir a Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('gallery-media')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error('Error subiendo foto:', uploadError);
+        // Fallback a base64 si falla la subida
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64String = reader.result as string;
+          updatePhoto(idx, base64String);
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      // Obtener URL pública
+      const { data: { publicUrl } } = supabase.storage
+        .from('gallery-media')
+        .getPublicUrl(filePath);
+
+      updatePhoto(idx, publicUrl);
+    } catch (error) {
+      console.error('Error en la subida:', error);
+      // Fallback a base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        updatePhoto(idx, base64String);
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setUploadingPhoto(prev => ({ ...prev, [idx]: false }));
+    }
+  };
 
   const updateVideo = (idx: number, key: keyof GalleryVideo, val: string) =>
     updateContent((prev) => {
@@ -119,12 +215,53 @@ export default function GalleryTab() {
                 )}
               </div>
             )}
-            <Field
-              label="URL del archivo (video o imagen)"
-              value={v.src}
-              onChange={(val) => updateVideo(i, "src", val)}
-              placeholder="/genesis-video-1.mov o https://..."
-            />
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <div className="flex-1 relative">
+                  <input
+                    type="file"
+                    accept={v.type === "video" ? "video/*,image/*" : "image/*"}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleVideoUpload(i, file);
+                    }}
+                    disabled={uploadingVideo[i]}
+                    className="w-full px-3 py-2.5 rounded-xl text-sm outline-none transition-all focus:ring-2 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold disabled:opacity-50"
+                    style={{
+                      ...inputBase,
+                      "--tw-ring-color": "#C8A889",
+                      "file:bg": "#5C3C2C",
+                      "file:text": "#FAF8F5"
+                    } as React.CSSProperties}
+                  />
+                  {uploadingVideo[i] && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-xl">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-xs" style={{ color: "#5C3C2C" }}>Subiendo...</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={() => updateVideo(i, "src", "")}
+                  className="px-3 py-2.5 rounded-xl text-xs font-medium transition-colors hover:bg-red-50 flex items-center gap-1"
+                  style={{
+                    color: "#B09070",
+                    border: "1px solid rgba(200,168,137,0.25)"
+                  }}
+                >
+                  <X size={12} />
+                  Limpiar
+                </button>
+              </div>
+              <Field
+                label="O URL del archivo (opcional)"
+                value={v.src && !v.src.startsWith('data:') && !v.src.startsWith('blob:') ? v.src : ""}
+                onChange={(val) => updateVideo(i, "src", val)}
+                placeholder="/genesis-video-1.mov o https://..."
+              />
+            </div>
             {v.type === "video" && (
               <Field
                 label="URL imagen de portada (poster)"
@@ -162,14 +299,53 @@ export default function GalleryTab() {
                   <img src={p.src} className="w-full h-full object-cover" alt="" />
                 </div>
               )}
-              <input
-                type="text"
-                value={p.src}
-                onChange={(e) => updatePhoto(i, e.target.value)}
-                placeholder="/genesis-2.jpg o https://..."
-                className="w-full px-3 py-2 rounded-xl text-sm outline-none transition-all focus:ring-2"
-                style={{ background: "#FFFFFF", border: "1px solid rgba(200,168,137,0.35)", color: "#2C1A0A", "--tw-ring-color": "#C8A889" } as React.CSSProperties}
-              />
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handlePhotoUpload(i, file);
+                      }}
+                      disabled={uploadingPhoto[i]}
+                      className="w-full px-3 py-2 rounded-xl text-sm outline-none transition-all focus:ring-2 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold disabled:opacity-50"
+                      style={{
+                        ...inputBase,
+                        "--tw-ring-color": "#C8A889",
+                        "file:bg": "#5C3C2C",
+                        "file:text": "#FAF8F5"
+                      } as React.CSSProperties}
+                    />
+                    {uploadingPhoto[i] && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-xl">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                          <span className="text-xs" style={{ color: "#5C3C2C" }}>Subiendo...</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => updatePhoto(i, "")}
+                    className="mt-1 px-3 py-2 rounded-xl text-xs font-medium transition-colors hover:bg-red-50 flex items-center gap-1"
+                    style={{
+                      color: "#B09070",
+                      border: "1px solid rgba(200,168,137,0.25)"
+                    }}
+                  >
+                    <X size={12} />
+                    Limpiar
+                  </button>
+                </div>
+                <Field
+                  label="O URL de la foto (opcional)"
+                  value={p.src && !p.src.startsWith('data:') && !p.src.startsWith('blob:') ? p.src : ""}
+                  onChange={(v) => updatePhoto(i, v)}
+                  placeholder="/genesis-2.jpg o https://..."
+                />
+              </div>
             </div>
             <button
               onClick={() => removePhoto(i)}
