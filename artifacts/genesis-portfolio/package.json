@@ -71,6 +71,6 @@
     "zod": "^3.25.76"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.99.2"
+    "@supabase/supabase-js": "^2.49.4"
   }
 }
