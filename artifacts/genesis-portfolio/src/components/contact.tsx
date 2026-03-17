@@ -409,7 +409,7 @@ export function Contact() {
           <a
             href="/admin"
             className="flex items-center gap-2 text-[10px] uppercase tracking-widest transition-all duration-300 hover:opacity-80 hover:scale-105"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "rgba(255,255,255,0.15)", marginRight: "20px" }}
+            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "rgba(255,255,255,0.15)", marginRight: "auto" }}
           >
             <Lock size={9} /> Acceso Privado
           </a>
