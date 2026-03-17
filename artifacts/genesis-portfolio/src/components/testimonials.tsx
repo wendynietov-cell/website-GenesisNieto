@@ -10,7 +10,7 @@ export function Testimonials() {
     <section
       id="testimonios"
       className="py-32 relative overflow-hidden"
-      style={{ backgroundColor: "#2E1608" }}
+      style={{ background: "linear-gradient(to bottom, #140C06, #1C1008)" }}
     >
       <div className="absolute top-0 left-0 w-full h-px" style={{ background: "linear-gradient(to right, transparent, rgba(195,162,122,0.3), transparent)" }} />
       <div className="absolute bottom-0 left-0 w-full h-px" style={{ background: "linear-gradient(to right, transparent, rgba(195,162,122,0.3), transparent)" }} />
@@ -54,7 +54,7 @@ export function Testimonials() {
                   "
                 </span>
                 <p
-                  className="text-xl italic leading-relaxed flex-grow relative z-10"
+                  className="text-xl italic leading-relaxed grow relative z-10"
                   style={{ fontFamily: "'Cormorant Garamond', serif", color: "rgba(245,237,224,0.85)" }}
                 >
                   {t.quote || "Este espacio está reservado para tu próximo testimonio de marca."}

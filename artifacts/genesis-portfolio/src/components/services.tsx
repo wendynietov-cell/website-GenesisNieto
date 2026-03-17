@@ -15,7 +15,7 @@ export function Services() {
     <section
       id="servicios"
       className="py-32 relative overflow-hidden"
-      style={{ backgroundColor: "#2E1608" }}
+      style={{ background: "linear-gradient(to bottom, #140C06, #1C1008)" }}
     >
       {/* Decoración de fondo oscuro */}
       <div className="absolute top-0 left-0 w-full h-px" style={{ background: "linear-gradient(to right, transparent, rgba(195,162,122,0.3), transparent)" }} />
@@ -59,33 +59,33 @@ export function Services() {
               transition={{ duration: 0.8, delay, ease: [0.16, 1, 0.3, 1] }}
               className="group"
             >
-              <GlassCard dark className="h-full flex flex-col p-10 rounded-[40px] transition-all duration-500 group-hover:-translate-y-2">
+              <GlassCard dark className="h-full flex flex-col p-8 rounded-[40px] transition-all duration-500 group-hover:-translate-y-2">
                 {/* Icono */}
                 <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-8 transition-colors duration-500"
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center mb-6 transition-colors duration-500"
                   style={{ backgroundColor: "rgba(195,162,122,0.15)", color: "#C3A27A" }}
                 >
-                  <Icon size={28} strokeWidth={1.2} className="group-hover:scale-110 transition-transform duration-500" />
+                  <Icon size={24} strokeWidth={1.2} className="group-hover:scale-110 transition-transform duration-500" />
                 </div>
 
                 {/* Títulos */}
-                <h3
-                  className="text-3xl mb-3"
+                <h3 
+                  className="text-2xl mb-3"
                   style={{ fontFamily: "'Cormorant Garamond', serif", color: "#F5EDE0", fontWeight: 600 }}
                 >
                   {data.title}
                 </h3>
-                <p className="text-xs uppercase tracking-[0.2em] font-bold mb-6" style={{ color: "#C3A27A" }}>
+                <p className="text-sm uppercase tracking-[0.2em] text-[#C3A27A] font-bold mb-4">
                   {data.subtitle}
                 </p>
 
                 {/* Descripción */}
-                <p className="mb-8 leading-relaxed font-light" style={{ color: "rgba(245,237,224,0.65)" }}>
+                <p className="text-stone-300 mb-6 leading-relaxed font-light">
                   {data.description}
                 </p>
 
                 {/* Features */}
-                <ul className="space-y-4 mb-12 grow">
+                <ul className="space-y-3 mb-8 grow">
                   {data.features.map((feature, i) => (
                     <li key={i} className="flex items-start gap-4 text-sm" style={{ color: "rgba(245,237,224,0.75)" }}>
                       <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#C3A27A" }} />
@@ -95,11 +95,14 @@ export function Services() {
                 </ul>
 
                 {/* Botón */}
-                <button
+                <button 
                   onClick={() => handleQuote(data.title)}
                   className="w-full py-4 rounded-2xl text-[11px] uppercase tracking-widest font-bold transition-all duration-300 cursor-pointer overflow-hidden relative group/btn"
-                  style={{ backgroundColor: "#F5EDE0", color: "#2E1608" }}
-                >
+                  style={{
+                    backgroundColor: "#F5EDE0", 
+                    color: "#2E1608"
+                  }}
+                >  
                   <span className="relative z-10">{data.cta}</span>
                   <div className="absolute inset-0 bg-[#C3A27A] translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
                 </button>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useContent, SiteContent, MethodStep, Testimonial, Favorite, GalleryVideo, GalleryPhoto } from "@/context/content-context";
+import { useContent, SiteContent, MethodStep, Testimonial, Favorite, GalleryVideo, GalleryPhoto, Brand } from "@/context/content-context";
 import { Lock, Eye, Save, RotateCcw, ChevronRight, ExternalLink, Check, X } from "lucide-react";
 
 const ADMIN_PASSWORD = "genesis2025";
@@ -364,15 +364,24 @@ function ContactTab() {
 
 function BrandsTab() {
   const { content, updateContent } = useContent();
-  const updateBrand = (idx: number, val: string) =>
+
+  const updateBrand = (idx: number, key: keyof Brand, val: string) =>
     updateContent((prev) => {
-      const items = prev.brands.items.map((b, i) => i === idx ? { name: val } : b);
+      const items = prev.brands.items.map((b, i) => i === idx ? { ...b, [key]: val } : b);
       return { ...prev, brands: { ...prev.brands, items } };
     });
+
   const addBrand = () =>
-    updateContent((prev) => ({ ...prev, brands: { ...prev.brands, items: [...prev.brands.items, { name: "" }] } }));
+    updateContent((prev) => ({
+      ...prev,
+      brands: { ...prev.brands, items: [...prev.brands.items, { name: "", category: "", tab: "marcas" as const }] },
+    }));
+
   const removeBrand = (idx: number) =>
     updateContent((prev) => ({ ...prev, brands: { ...prev.brands, items: prev.brands.items.filter((_, i) => i !== idx) } }));
+
+  const inputStyle = { background: "rgba(255,255,255,0.7)", border: "1px solid rgba(200,168,137,0.3)", color: "#3a2519", "--tw-ring-color": "#C8A889" } as React.CSSProperties;
+  const selectStyle = { ...inputStyle, cursor: "pointer" };
 
   return (
     <div>
@@ -380,23 +389,49 @@ function BrandsTab() {
         <Field label="Título" value={content.brands.sectionTitle} onChange={(v) => updateContent((p) => ({ ...p, brands: { ...p.brands, sectionTitle: v } }))} />
         <Field label="Subtítulo" value={content.brands.sectionSubtitle} onChange={(v) => updateContent((p) => ({ ...p, brands: { ...p.brands, sectionSubtitle: v } }))} />
       </SectionCard>
+
       <SectionCard title="Lista de marcas">
+        <p className="text-xs mb-4" style={{ color: "#B09070" }}>
+          Cada marca aparece en el tab correspondiente. La categoría se muestra debajo del nombre.
+        </p>
         {content.brands.items.map((b, i) => (
-          <div key={i} className="flex gap-2 mb-2">
-            <input
-              type="text"
-              value={b.name}
-              onChange={(e) => updateBrand(i, e.target.value)}
-              placeholder={`Marca ${i + 1}`}
-              className="flex-1 px-3 py-2 rounded-xl text-sm outline-none transition-all focus:ring-2"
-              style={{ background: "rgba(255,255,255,0.7)", border: "1px solid rgba(200,168,137,0.3)", color: "#3a2519", "--tw-ring-color": "#C8A889" } as React.CSSProperties}
-            />
-            <button onClick={() => removeBrand(i)} className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors hover:bg-red-50" style={{ color: "#B09070" }}>
-              <X size={14} />
-            </button>
+          <div key={i} className="mb-4 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.4)", border: "1px solid rgba(200,168,137,0.2)" }}>
+            <div className="flex gap-2 mb-2">
+              <input
+                type="text"
+                value={b.name}
+                onChange={(e) => updateBrand(i, "name", e.target.value)}
+                placeholder="Nombre de la marca"
+                className="flex-1 px-3 py-2 rounded-xl text-sm outline-none transition-all focus:ring-2"
+                style={inputStyle}
+              />
+              <button onClick={() => removeBrand(i)} className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors hover:bg-red-50 shrink-0" style={{ color: "#B09070" }}>
+                <X size={14} />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                value={b.category}
+                onChange={(e) => updateBrand(i, "category", e.target.value)}
+                placeholder="Categoría (ej: Skincare)"
+                className="px-3 py-2 rounded-xl text-sm outline-none transition-all focus:ring-2"
+                style={inputStyle}
+              />
+              <select
+                value={b.tab ?? "marcas"}
+                onChange={(e) => updateBrand(i, "tab", e.target.value)}
+                className="px-3 py-2 rounded-xl text-sm outline-none transition-all focus:ring-2"
+                style={selectStyle}
+              >
+                <option value="marcas">Marcas</option>
+                <option value="empresas">Empresas</option>
+                <option value="lugares">Lugares</option>
+              </select>
+            </div>
           </div>
         ))}
-        <button onClick={addBrand} className="w-full mt-2 py-2.5 rounded-xl text-sm font-medium border-dashed border-2 transition-colors hover:bg-white/30" style={{ borderColor: "#C8A889", color: "#8A6B52" }}>
+        <button onClick={addBrand} className="w-full mt-1 py-2.5 rounded-xl text-sm font-medium border-dashed border-2 transition-colors hover:bg-white/30" style={{ borderColor: "#C8A889", color: "#8A6B52" }}>
           + Agregar marca
         </button>
       </SectionCard>

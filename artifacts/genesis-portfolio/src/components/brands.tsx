@@ -1,69 +1,212 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "./ui/glass-card";
-import { Sparkles, Star, Zap, Heart, Coffee, Leaf, Sun, Droplets, ShoppingBag, Flower } from "lucide-react";
+import { Sparkles, Flower, Building2, MapPin } from "lucide-react";
 import { useContent } from "@/context/content-context";
 
-const ICONS = [Star, Sparkles, Heart, ShoppingBag, Leaf, Sun, Droplets, Flower];
+const TABS = [
+  { id: "marcas",   label: "Marcas",   sublabel: "Belleza · Skincare · UGC" },
+  { id: "empresas", label: "Empresas", sublabel: "Moda · Entidades · Ropa" },
+  { id: "lugares",  label: "Lugares",  sublabel: "Restaurantes · Lifestyle" },
+];
+
+function iconForCategory(category: string) {
+  const c = category.toLowerCase();
+  if (c.includes("skin") || c.includes("flor") || c.includes("beauty")) return Flower;
+  if (c.includes("empresa") || c.includes("entidad") || c.includes("ropa") || c.includes("moda")) return Building2;
+  if (c.includes("restaurante") || c.includes("lugar") || c.includes("discoteca") || c.includes("club")) return MapPin;
+  return Sparkles;
+}
 
 export function Brands() {
   const { content } = useContent();
   const { sectionTitle, sectionSubtitle, items } = content.brands;
+  const [activeTab, setActiveTab] = useState<"marcas" | "empresas" | "lugares">("marcas");
+  const filtered = items.filter((b) => (b.tab ?? "marcas") === activeTab);
 
   return (
-    <section id="marcas" className="py-28 relative overflow-hidden" style={{ backgroundColor: "#2E1608" }}>
-      <div className="absolute top-0 left-0 w-full h-px" style={{ background: "linear-gradient(to right, transparent, rgba(195,162,122,0.3), transparent)" }} />
-      <div className="absolute bottom-0 left-0 w-full h-px" style={{ background: "linear-gradient(to right, transparent, rgba(195,162,122,0.3), transparent)" }} />
-      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 80% 50% at 50% 50%, rgba(195,162,122,0.04) 0%, transparent 70%)" }} />
+    <section
+      id="marcas"
+      className="py-32 relative overflow-hidden"
+      style={{ background: "linear-gradient(to bottom, #140C06, #1C1008)" }}
+    >
+      {/* Líneas borde */}
+      <div className="absolute top-0 left-0 w-full h-px" style={{ background: "linear-gradient(to right, transparent, rgba(195,162,122,0.25), transparent)" }} />
+      <div className="absolute bottom-0 left-0 w-full h-px" style={{ background: "linear-gradient(to right, transparent, rgba(195,162,122,0.25), transparent)" }} />
+
+      {/* Glow ambiental */}
+      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 60% 50% at 50% 40%, rgba(195,162,122,0.05) 0%, transparent 70%)" }} />
 
       <div className="max-w-6xl mx-auto px-6 relative z-10">
+
+        {/* ── Cabecera ── */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+          className="text-center mb-14"
         >
-          <span className="inline-block text-[10px] uppercase tracking-[0.25em] font-semibold mb-6" style={{ color: "#C3A27A" }}>
+          <span
+            className="inline-block text-[10px] uppercase font-bold mb-5 tracking-[0.25em]"
+            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#C3A27A" }}
+          >
             Colaboraciones
           </span>
           <h2
-            className="text-4xl md:text-5xl mb-4 tracking-tight"
-            style={{ fontFamily: "'Cormorant Garamond', serif", color: "#F5EDE0", fontWeight: 600 }}
+            className="text-5xl md:text-6xl tracking-tight leading-[0.9]"
+            style={{ fontFamily: "'Cormorant Garamond', serif", color: "#F5EDE0", fontWeight: 300 }}
           >
-            {sectionTitle || "Marcas & Colaboraciones"}
+            {sectionTitle.split("&")[0].trim()}{" "}&amp;{" "}
+            <em className="italic" style={{ fontWeight: 700, color: "#C3A27A" }}>
+              {sectionTitle.split("&")[1]?.trim() ?? "Partners"}
+            </em>
           </h2>
-          <p className="text-xl max-w-2xl mx-auto font-light italic" style={{ color: "rgba(245,237,224,0.45)" }}>
-            {sectionSubtitle || "Con quienes colaboro o aspiro colaborar"}
-          </p>
         </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-          {items.map((brand, i) => {
-            const Icon = ICONS[i % ICONS.length];
-            return (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08, duration: 0.6, ease: [0.21, 0.47, 0.32, 0.98] }}
-                className={i % 2 === 0 ? "md:translate-y-4" : "md:-translate-y-4"}
+        {/* ── Tabs ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, delay: 0.15 }}
+          className="flex justify-center mb-14"
+        >
+          <div
+            className="flex items-stretch rounded-2xl overflow-hidden"
+            style={{
+              border: "1px solid rgba(195,162,122,0.2)",
+              background: "rgba(255,255,255,0.02)",
+              backdropFilter: "blur(12px)",
+            }}
+          >
+            {TABS.map((tab, i) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as "marcas" | "empresas" | "lugares")}
+                className="relative px-8 py-4 flex flex-col items-center transition-all duration-400 cursor-pointer"
+                style={{
+                  background: activeTab === tab.id ? "rgba(195,162,122,0.1)" : "transparent",
+                  borderRight: i < TABS.length - 1 ? "1px solid rgba(195,162,122,0.12)" : "none",
+                }}
               >
-                <GlassCard dark className="relative overflow-hidden group flex flex-col items-center justify-center gap-4 p-8 h-40 w-full transition-all duration-500 hover:-translate-y-2">
-                  <div
-                    className="relative z-10 p-3 rounded-full transition-all duration-500 group-hover:scale-110"
-                    style={{ background: "rgba(195,162,122,0.15)" }}
+                {/* Indicador activo */}
+                {activeTab === tab.id && (
+                  <motion.div
+                    layoutId="tab-indicator"
+                    className="absolute bottom-0 left-4 right-4 h-px"
+                    style={{ background: "#C3A27A" }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
+                <span
+                  className="text-sm font-semibold mb-0.5 transition-colors duration-300"
+                  style={{
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    color: activeTab === tab.id ? "#F5EDE0" : "rgba(245,237,224,0.3)",
+                  }}
+                >
+                  {tab.label}
+                </span>
+                <span
+                  className="text-[9px] uppercase tracking-widest transition-opacity duration-300"
+                  style={{
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    color: "#C3A27A",
+                    opacity: activeTab === tab.id ? 0.7 : 0.25,
+                  }}
+                >
+                  {tab.sublabel}
+                </span>
+              </button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* ── Grid de tarjetas — altura fija para estabilidad ── */}
+        <div style={{ minHeight: "320px" }}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+            >
+              {filtered.length === 0 ? (
+                <div
+                  className="col-span-3 flex items-center justify-center"
+                  style={{ minHeight: "200px", color: "rgba(245,237,224,0.2)", fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "13px" }}
+                >
+                  Sin entradas aún
+                </div>
+              ) : filtered.map((brand, i) => {
+                const Icon = iconForCategory(brand.category);
+                const num = String(i + 1).padStart(2, "0");
+
+                return (
+                  <motion.div
+                    key={brand.name + i}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.07, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                   >
-                    <Icon className="w-7 h-7" style={{ color: "#C3A27A" }} />
-                  </div>
-                  <span className="relative z-10 font-medium text-sm tracking-wide transition-colors" style={{ color: "rgba(245,237,224,0.7)" }}>
-                    {brand.name}
-                  </span>
-                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-px group-hover:w-full transition-all duration-700" style={{ background: "linear-gradient(to right, transparent, rgba(195,162,122,0.5), transparent)" }} />
-                </GlassCard>
-              </motion.div>
-            );
-          })}
+                    <GlassCard
+                      dark
+                      className="group h-44 w-full flex flex-col justify-between p-6 rounded-3xl transition-all duration-400 hover:-translate-y-1"
+                    >
+                      {/* Hover glow */}
+                      <div
+                        className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                        style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(195,162,122,0.08), transparent 70%)" }}
+                      />
+
+                      {/* Top row: número + ícono */}
+                      <div className="flex items-center justify-between relative z-10">
+                        <span
+                          className="text-[10px] font-bold tabular-nums"
+                          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "rgba(195,162,122,0.4)", letterSpacing: "0.1em" }}
+                        >
+                          {num}
+                        </span>
+                        <div
+                          className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-400 group-hover:scale-110"
+                          style={{ background: "rgba(195,162,122,0.08)", color: "#C3A27A" }}
+                        >
+                          <Icon size={16} strokeWidth={1.5} />
+                        </div>
+                      </div>
+
+                      {/* Bottom: nombre + categoría */}
+                      <div className="relative z-10">
+                        <div className="h-px mb-3 w-4 group-hover:w-10 transition-all duration-500" style={{ background: "#C3A27A", opacity: 0.5 }} />
+                        <h3
+                          className="text-xl md:text-2xl leading-tight mb-1"
+                          style={{
+                            fontFamily: "'Cormorant Garamond', serif",
+                            color: "#F5EDE0",
+                            fontWeight: 500,
+                            fontStyle: "italic",
+                          }}
+                        >
+                          {brand.name}
+                        </h3>
+                        <span
+                          className="text-[9px] uppercase tracking-[0.25em] font-bold"
+                          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "rgba(195,162,122,0.55)" }}
+                        >
+                          {brand.category}
+                        </span>
+                      </div>
+                    </GlassCard>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          </AnimatePresence>
         </div>
+
       </div>
     </section>
   );

@@ -29,6 +29,8 @@ export interface Favorite {
 
 export interface Brand {
   name: string;
+  category: string;
+  tab: "marcas" | "empresas" | "lugares";
 }
 
 export interface GalleryVideo {
@@ -187,23 +189,21 @@ const DEFAULT_CONTENT: SiteContent = {
     sectionTitle: "Marcas & Colaboraciones",
     sectionSubtitle: "Con quienes colaboro o aspiro colaborar",
     items: [
-      { name: "Aesthetic Active" },
-      { name: "Pure Matcha" },
-      { name: "Glow Skincare" },
-      { name: "Aura Supplements" },
-      { name: "Zen Wear" },
-      { name: "Nourish Foods" },
-      { name: "Lumina Beauty" },
-      { name: "Hydra Labs" },
-    ],
+      { name: "Miss Beauty",    category: "Maquillaje", tab: "marcas"   },
+      { name: "Atenea",         category: "Maquillaje", tab: "marcas"   },
+      { name: "Miis Cosmetics", category: "Maquillaje", tab: "marcas"   },
+      { name: "Vive Beauty",    category: "Skincare",   tab: "marcas"   },
+      { name: "Trendy",         category: "Maquillaje", tab: "marcas"   },
+      { name: "Anik",           category: "Maquillaje", tab: "marcas"   },
+    ] as Brand[],
   },
   gallery: {
     sectionTitle: "Portafolio Seleccionado",
     videos: [
       { type: "video", src: "/genesis-video-1.mov", poster: "/genesis-1.jpg", category: "Fitness" },
-      { type: "photo", src: "/genesis-4.jpg", category: "Lifestyle" },
-      { type: "photo", src: "/genesis-6.jpg", category: "Beauty" },
-      { type: "photo", src: "/genesis-8.jpg", category: "Gastro" },
+      { type: "video", src: "/genesis-video-2.mov", poster: "/genesis-4.jpg", category: "Lifestyle" },
+      { type: "video", src: "/genesis-video-3.mov", poster: "/genesis-6.jpg", category: "Beauty" },
+      { type: "video", src: "/genesis-video-4.mov", poster: "/genesis-8.jpg", category: "Gastro" },
     ],
     photos: [
       { src: "/genesis-1.jpg" },

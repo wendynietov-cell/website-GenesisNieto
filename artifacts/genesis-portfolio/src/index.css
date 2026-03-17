@@ -44,11 +44,11 @@
 
 /* Glass card sobre fondo oscuro — traslúcido con borde dorado */
 .glass-dark {
-  background: rgba(255, 248, 235, 0.07);
+  background: rgba(10, 6, 2, 0.6);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(195, 162, 122, 0.22);
-  box-shadow: 0 8px 40px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(195, 162, 122, 0.18);
+  border: 1px solid rgba(195, 162, 122, 0.45);
+  box-shadow: 0 8px 40px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(195, 162, 122, 0.25);
 }
 
 /* ─── Paper / linen micro-texture para secciones claras ─── */

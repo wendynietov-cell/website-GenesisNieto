@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(cd:*)",
+      "Bash(node:*)",
+      "mcp__ide__getDiagnostics"
+    ]
+  }
+}
